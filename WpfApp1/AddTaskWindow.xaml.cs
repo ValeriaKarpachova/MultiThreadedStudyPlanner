@@ -1,40 +1,44 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 
 namespace WpfApp1
 {
     public partial class AddTaskWindow : Window
     {
-        public string TaskName { get; set; }
-        public string TaskDescription { get; set; }
-        public DateTime TaskDeadline { get; set; }
-        public int TaskPriority { get; set; }
+        public TaskItem NewTask { get; private set; }
 
-        public AddTaskWindow()
+        public AddTaskWindow(TaskItem task = null)
         {
             InitializeComponent();
-            DeadlinePicker.SelectedDate = DateTime.Now;
-            PriorityComboBox.SelectedIndex = 0;
+
+            if (task != null)
+            {
+                NameBox.Text = task.Name;
+                ProgressBox.Text = task.Progress.ToString();
+                DeadlinePicker.SelectedDate = task.Deadline;
+
+                NewTask = task; 
+            }
         }
 
-        private void AddButton_Click(object sender, RoutedEventArgs e)
+        private void Add_Click(object sender, RoutedEventArgs e)
         {
-            TaskName = NameTextBox.Text;
-            TaskDescription = DescriptionTextBox.Text;
-            TaskDeadline = DeadlinePicker.SelectedDate ?? DateTime.Now;
-            TaskPriority = int.Parse((PriorityComboBox.SelectedItem as ComboBoxItem).Content.ToString());
+            try
+            {
+                if (NewTask == null)
+                    NewTask = new TaskItem();
 
-            DialogResult = true;
+                NewTask.Name = NameBox.Text;
+                NewTask.Progress = int.Parse(ProgressBox.Text);
+                NewTask.Deadline = DeadlinePicker.SelectedDate ?? DateTime.Now;
+
+                DialogResult = true;
+            }
+            catch
+            {
+                MessageBox.Show("Invalid input");
+            }
         }
 
-        private void CancelButton_Click(object sender, RoutedEventArgs e)
-        {
-            DialogResult = false;
-        }
     }
 }
