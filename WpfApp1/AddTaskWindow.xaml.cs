@@ -17,7 +17,7 @@ namespace WpfApp1
                 ProgressBox.Text = task.Progress.ToString();
                 DeadlinePicker.SelectedDate = task.Deadline;
 
-                NewTask = task; 
+                NewTask = task; // сохраняем ссылку
             }
         }
 

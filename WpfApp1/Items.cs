@@ -14,5 +14,6 @@ namespace WpfApp1
         public DateTime Deadline { get; set; }
         public int Priority { get; set; }
         public int Progress { get; set; }
+        public bool IsSelected { get; set; }
     }
 }

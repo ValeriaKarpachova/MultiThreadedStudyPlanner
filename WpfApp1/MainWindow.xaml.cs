@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace WpfApp1
@@ -35,7 +36,7 @@ namespace WpfApp1
             var button = sender as Button;
             var task = button.DataContext as TaskItem;
 
-            var window = new AddTaskWindow(task);
+            var window = new EditTaskWindow(task);
 
             if (window.ShowDialog() == true)
             {
