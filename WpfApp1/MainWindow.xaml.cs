@@ -1,6 +1,8 @@
 ﻿using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.ComponentModel;
+using System.Windows.Data;
 
 namespace WpfApp1
 {
@@ -13,6 +15,9 @@ namespace WpfApp1
             InitializeComponent();
 
             TasksGrid.ItemsSource = manager.Tasks;
+
+            var view = CollectionViewSource.GetDefaultView(TasksGrid.ItemsSource);
+            view.SortDescriptions.Add(new SortDescription("Priority", ListSortDirection.Descending));
         }
 
         private void AddTask_Click(object sender, RoutedEventArgs e)
@@ -22,6 +27,10 @@ namespace WpfApp1
             if (window.ShowDialog() == true)
             {
                 manager.AddTask(window.NewTask);
+
+                window.NewTask.CalculatePriority();
+
+                CollectionViewSource.GetDefaultView(TasksGrid.ItemsSource).Refresh();
             }
         }
 
@@ -40,7 +49,9 @@ namespace WpfApp1
 
             if (window.ShowDialog() == true)
             {
-                TasksGrid.Items.Refresh();
+                task.CalculatePriority(); 
+
+                CollectionViewSource.GetDefaultView(TasksGrid.ItemsSource).Refresh();
             }
         }
     }

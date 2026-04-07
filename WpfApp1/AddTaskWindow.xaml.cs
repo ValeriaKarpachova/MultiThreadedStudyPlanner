@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Controls;
+using static WpfApp1.TaskItem;
 
 namespace WpfApp1
 {
     public partial class AddTaskWindow : Window
     {
         public TaskItem NewTask { get; private set; }
-
+        
         public AddTaskWindow(TaskItem task = null)
         {
             InitializeComponent();
@@ -17,7 +19,7 @@ namespace WpfApp1
                 ProgressBox.Text = task.Progress.ToString();
                 DeadlinePicker.SelectedDate = task.Deadline;
 
-                NewTask = task; // сохраняем ссылку
+                NewTask = task; 
             }
         }
 
@@ -31,6 +33,11 @@ namespace WpfApp1
                 NewTask.Name = NameBox.Text;
                 NewTask.Progress = int.Parse(ProgressBox.Text);
                 NewTask.Deadline = DeadlinePicker.SelectedDate ?? DateTime.Now;
+
+                var selectedType = (TypeBox.SelectedItem as ComboBoxItem)?.Content.ToString();
+                NewTask.TaskType = selectedType ?? "Lecture"; 
+
+                NewTask.CalculateImportance();
 
                 DialogResult = true;
             }
