@@ -81,6 +81,23 @@
                                     Width="150"/>
 
                 <!-- Buttons -->
+                <DataGridCheckBoxColumn Header="Completed"
+                        Binding="{Binding IsCompleted, Mode=TwoWay}"
+                        Width="100">
+                    <DataGridCheckBoxColumn.ElementStyle>
+                        <Style TargetType="CheckBox">
+                            <EventSetter Event="Checked" Handler="TaskCompletedChanged"/>
+                            <EventSetter Event="Unchecked" Handler="TaskCompletedChanged"/>
+                        </Style>
+                    </DataGridCheckBoxColumn.ElementStyle>
+                    <DataGridCheckBoxColumn.EditingElementStyle>
+                        <Style TargetType="CheckBox">
+                            <EventSetter Event="Checked" Handler="TaskCompletedChanged"/>
+                            <EventSetter Event="Unchecked" Handler="TaskCompletedChanged"/>
+                        </Style>
+                    </DataGridCheckBoxColumn.EditingElementStyle>
+                </DataGridCheckBoxColumn>
+
                 <DataGridTemplateColumn Header="Actions" Width="150">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>

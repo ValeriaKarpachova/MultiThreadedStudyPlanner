@@ -15,7 +15,7 @@ namespace WpfApp1
         private string taskType;
         private int priority;
         private int progress;
-        private bool isSelected;
+        private bool isCompleted;
 
         public int Id { get; set; }
 
@@ -64,10 +64,16 @@ namespace WpfApp1
             set { progress = value; OnPropertyChanged("Progress"); }
         }
 
-        public bool IsSelected
+        public bool IsCompleted
         {
-            get => isSelected;
-            set { isSelected = value; OnPropertyChanged("IsSelected"); }
+            get => Progress >= 100;
+            set
+            {
+                if (value)
+                    Progress = 100;  
+                OnPropertyChanged(nameof(IsCompleted));
+                OnPropertyChanged(nameof(Progress));
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

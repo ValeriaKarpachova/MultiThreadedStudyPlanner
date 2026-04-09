@@ -1,14 +1,17 @@
-﻿using System.Linq;
+﻿using System;
+using System.ComponentModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.ComponentModel;
 using System.Windows.Data;
+using WpfApp1.Services;
 
 namespace WpfApp1.Views
 {
     public partial class MainWindow : Window
     {
         private TaskManager manager = new TaskManager();
+        private BackgroundProcessor _backgroundProcessor;
 
         public MainWindow()
         {
@@ -16,8 +19,31 @@ namespace WpfApp1.Views
 
             TasksGrid.ItemsSource = manager.Tasks;
 
+            foreach (var task in manager.Tasks)
+                task.PropertyChanged += Task_PropertyChanged;
+
+            manager.Tasks.CollectionChanged += (s, e) =>
+            {
+                if (e.NewItems != null)
+                {
+                    foreach (TaskItem newTask in e.NewItems)
+                        newTask.PropertyChanged += Task_PropertyChanged;
+                }
+            };
+
+            _backgroundProcessor = new BackgroundProcessor(manager, TimeSpan.FromSeconds(30));
+            _backgroundProcessor.Start();
+
+            RefreshTasksView();
+        }
+
+        public void RefreshTasksView()
+        {
             var view = CollectionViewSource.GetDefaultView(TasksGrid.ItemsSource);
+            view.SortDescriptions.Clear();
             view.SortDescriptions.Add(new SortDescription("Priority", ListSortDirection.Descending));
+            view.Filter = t => !(t as TaskItem).IsCompleted;
+            view.Refresh();
         }
 
         private void AddTask_Click(object sender, RoutedEventArgs e)
@@ -30,7 +56,7 @@ namespace WpfApp1.Views
 
                 window.NewTask.CalculatePriority();
 
-                CollectionViewSource.GetDefaultView(TasksGrid.ItemsSource).Refresh();
+                RefreshTasksView();
             }
         }
 
@@ -38,6 +64,8 @@ namespace WpfApp1.Views
         {
             var task = (sender as Button).DataContext as TaskItem;
             manager.DeleteTask(task);
+
+            RefreshTasksView();
         }
 
         private void Edit_Click(object sender, RoutedEventArgs e)
@@ -49,10 +77,31 @@ namespace WpfApp1.Views
 
             if (window.ShowDialog() == true)
             {
-                task.CalculatePriority(); 
+                task.CalculatePriority();
 
-                CollectionViewSource.GetDefaultView(TasksGrid.ItemsSource).Refresh();
+                RefreshTasksView();
             }
+        }
+
+        private void TaskCompletedChanged(object sender, RoutedEventArgs e)
+        {
+            Dispatcher.InvokeAsync(() =>
+            {
+                if (TasksGrid.CommitEdit(DataGridEditingUnit.Row, true))
+                    RefreshTasksView();
+            }, System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        private void Task_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(TaskItem.IsCompleted))
+                TaskCompletedChanged(sender, null); 
+        }
+
+        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+        {
+            _backgroundProcessor.Stop(); //останавливает фоновый процесс, чтобы он не продолжал работать после закрытия окна. в будущем останавливать не будет
+            base.OnClosing(e);
         }
     }
 }

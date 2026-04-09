@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using WpfApp1.Services;
@@ -46,6 +47,9 @@ namespace WpfApp1
 
                 NewTask.CalculateImportance();
                 NewTask.CalculatePriority();
+
+                var mainWindow = Application.Current.Windows.OfType<Views.MainWindow>().FirstOrDefault();
+                mainWindow?.RefreshTasksView();
 
                 DialogResult = true;
             }

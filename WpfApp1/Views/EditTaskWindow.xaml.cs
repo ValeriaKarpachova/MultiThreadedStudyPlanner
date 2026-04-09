@@ -56,8 +56,8 @@ namespace WpfApp1
                 Task.CalculateImportance();
                 Task.CalculatePriority();
 
-                CollectionViewSource.GetDefaultView(Application.Current.Windows
-                    .OfType<Views.MainWindow>().First().TasksGrid.ItemsSource).Refresh();
+                var mainWindow = Application.Current.Windows.OfType<Views.MainWindow>().FirstOrDefault();
+                mainWindow?.RefreshTasksView();
 
                 DialogResult = true;
             }
