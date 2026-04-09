@@ -21,11 +21,18 @@
                    Margin="10"/>
 
         <Button Grid.Row="0" Grid.Column="1"
-                Content="+"
-                Width="35" Height="35"
-                HorizontalAlignment="Right"
-                Margin="5"
-                Click="AddTask_Click"/>
+        Width="35" Height="35"
+        HorizontalAlignment="Right"
+        Margin="5"
+        Click="AddTask_Click"
+        Padding="0">
+
+            <TextBlock Text="+"
+               FontSize="18"
+               FontWeight="Bold"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center"/>
+        </Button>
 
         <!-- LEFT PANEL -->
         <StackPanel Grid.Row="1" Grid.Column="0" Margin="5">
@@ -42,48 +49,50 @@
 
         <!-- MAIN TABLE -->
         <DataGrid Grid.Row="1" Grid.Column="1"
-                  x:Name="TasksGrid"
-                  AutoGenerateColumns="False"
-                  CanUserAddRows="False"
-                  SelectionMode="Single"
-                  Margin="5">
+            x:Name="TasksGrid"
+            AutoGenerateColumns="False"
+            CanUserAddRows="False"
+            SelectionMode="Single"
+            Margin="5"
+            HorizontalScrollBarVisibility="Disabled"
+            ColumnWidth="*">
 
             <DataGrid.Columns>
 
-                <!-- Checkbox -->
-                <DataGridTemplateColumn Width="60">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Width="0.5*"/>
                 
-
                 <!-- Task Name -->
                 <DataGridTextColumn Header="Task"
                                     Binding="{Binding Name}"
-                                    Width="*"/>
+                                    Width="2*"/>
 
+                <DataGridTextColumn Header="Description"
+                    Binding="{Binding Description}"
+                    Width="3*"/>
+
+                <DataGridTextColumn Header="Subject"
+                    Binding="{Binding Subject}"
+                    Width="2*"/>
+                
                 <!-- Progress -->
-                <DataGridTemplateColumn Header="Progress" Width="120">
+                <DataGridTemplateColumn Header="Progress" Width="1.5*">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <ProgressBar Value="{Binding Progress}"
-                                         Height="20"/>
+                                         Height="15"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
                 <!-- Deadline -->
                 <DataGridTextColumn Header="Deadline"
-                                    Binding="{Binding Deadline}"
-                                    Width="150"/>
+                    Binding="{Binding Deadline, StringFormat={}{0:dd.MM.yyyy HH:mm}}"
+                    Width="1.5*"/>
 
                 <!-- Buttons -->
                 <DataGridCheckBoxColumn Header="Completed"
                         Binding="{Binding IsCompleted, Mode=TwoWay}"
-                        Width="100">
+                        Width="0.7*">
                     <DataGridCheckBoxColumn.ElementStyle>
                         <Style TargetType="CheckBox">
                             <EventSetter Event="Checked" Handler="TaskCompletedChanged"/>
@@ -98,7 +107,7 @@
                     </DataGridCheckBoxColumn.EditingElementStyle>
                 </DataGridCheckBoxColumn>
 
-                <DataGridTemplateColumn Header="Actions" Width="150">
+                <DataGridTemplateColumn Header="Actions" Width="1.5*">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">

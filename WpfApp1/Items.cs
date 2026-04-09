@@ -11,6 +11,7 @@ namespace WpfApp1
         private string taskType;
         private int priority;
         private int progress;
+        private string subject;
         private bool isCompleted;
 
         public int Id { get; set; }
@@ -18,7 +19,13 @@ namespace WpfApp1
         public string Name
         {
             get => name;
-            set { name = value; OnPropertyChanged("Name"); }
+            set
+            {
+                name = value;
+                OnPropertyChanged("Name");
+
+                CalculatePriority();
+            }
         }
 
         public string Description
@@ -30,13 +37,25 @@ namespace WpfApp1
         public DateTime? Deadline
         {
             get => deadline;
-            set { deadline = value; OnPropertyChanged("Deadline"); }
+            set
+            {
+                deadline = value;
+                OnPropertyChanged("Deadline");
+
+                CalculatePriority(); 
+            }
         }
 
         public string TaskType
         {
             get => taskType;
-            set { taskType = value; OnPropertyChanged("TaskType"); }
+            set
+            {
+                taskType = value;
+                OnPropertyChanged("TaskType");
+
+                CalculatePriority();
+            }
         }
 
         public int Importance { get; private set; }
@@ -57,7 +76,24 @@ namespace WpfApp1
         public int Progress
         {
             get => progress;
-            set { progress = value; OnPropertyChanged("Progress"); }
+            set
+            {
+                progress = value;
+                OnPropertyChanged("Progress");
+
+                CalculatePriority();
+                OnPropertyChanged(nameof(IsCompleted));
+            }
+        }
+
+        public string Subject
+        {
+            get => subject;
+            set
+            {
+                subject = value;
+                OnPropertyChanged("Subject");
+            }
         }
 
         public bool IsCompleted

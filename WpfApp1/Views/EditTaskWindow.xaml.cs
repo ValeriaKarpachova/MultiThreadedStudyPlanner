@@ -53,9 +53,6 @@ namespace WpfApp1
                 else
                     Task.TaskType = selectedType;
 
-                Task.CalculateImportance();
-                Task.CalculatePriority();
-
                 var mainWindow = Application.Current.Windows.OfType<Views.MainWindow>().FirstOrDefault();
                 mainWindow?.RefreshTasksView();
 

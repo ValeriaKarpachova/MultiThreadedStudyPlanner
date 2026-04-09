@@ -69,7 +69,8 @@ namespace WpfApp1.Views
 
         private void Delete_Click(object sender, RoutedEventArgs e)
         {
-            var task = (sender as Button).DataContext as TaskItem;
+            var task = (sender as Button)?.DataContext as TaskItem;
+            if (task == null) return;
 
             manager.DeleteTask(task);
 
@@ -84,7 +85,6 @@ namespace WpfApp1.Views
 
             if (window.ShowDialog() == true)
             {
-                manager.UpdateTask(task);
                 RefreshTasksView();
             }
         }

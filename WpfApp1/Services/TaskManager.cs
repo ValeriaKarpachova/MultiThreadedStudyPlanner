@@ -13,6 +13,14 @@ namespace WpfApp1
             _db = db;
         }
 
+        private void Subscribe(TaskItem task)
+        {
+            task.PropertyChanged += (s, e) =>
+            {
+                _db.UpdateTask(task); 
+            };
+        }
+
         public void Load()
         {
             var tasks = _db.LoadTasks();
@@ -20,24 +28,23 @@ namespace WpfApp1
             Tasks.Clear();
 
             foreach (var t in tasks)
+            {
+                Subscribe(t);
                 Tasks.Add(t);
+            }
         }
 
         public void AddTask(TaskItem task)
         {
-            Tasks.Add(task);
             _db.AddTask(task);
+            Subscribe(task); 
+            Tasks.Add(task);
         }
 
         public void DeleteTask(TaskItem task)
         {
             Tasks.Remove(task);
             _db.DeleteTask(task.Id);
-        }
-
-        public void UpdateTask(TaskItem task)
-        {
-            _db.UpdateTask(task);
         }
     }
 }

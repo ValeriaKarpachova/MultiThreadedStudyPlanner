@@ -50,6 +50,7 @@ namespace WpfApp1.Services
                 {
                     cmd.Parameters.AddWithValue("@Name", task.Name);
                     cmd.Parameters.AddWithValue("@Description", task.Description);
+                    cmd.Parameters.AddWithValue("@Subject", task.Subject);
                     cmd.Parameters.AddWithValue("@Progress", task.Progress);
                     cmd.Parameters.AddWithValue("@Deadline", task.Deadline);
                     cmd.Parameters.AddWithValue("@TaskType", task.TaskType);
@@ -57,6 +58,7 @@ namespace WpfApp1.Services
                     cmd.Parameters.AddWithValue("@Priority", task.Priority);
 
                     cmd.ExecuteNonQuery();
+                    task.Id = (int)connection.LastInsertRowId;
                 }
             }
         }
@@ -72,6 +74,7 @@ namespace WpfApp1.Services
                     Name = @Name,
                     Description = @Description,
                     Progress = @Progress,
+                    Subject = @Subject
                     Deadline = @Deadline,
                     TaskType = @TaskType,
                     IsCompleted = @IsCompleted,
@@ -84,6 +87,7 @@ namespace WpfApp1.Services
                     cmd.Parameters.AddWithValue("@Id", task.Id);
                     cmd.Parameters.AddWithValue("@Name", task.Name);
                     cmd.Parameters.AddWithValue("@Description", task.Description);
+                    cmd.Parameters.AddWithValue("@Subject", task.Subject);
                     cmd.Parameters.AddWithValue("@Progress", task.Progress);
                     cmd.Parameters.AddWithValue("@Deadline", task.Deadline);
                     cmd.Parameters.AddWithValue("@TaskType", task.TaskType);
@@ -124,7 +128,7 @@ namespace WpfApp1.Services
                 using (var command = new SQLiteCommand(query, connection))
                 using (var reader = command.ExecuteReader())
                 {
-                    while (reader.Read())
+                    while (reader.Read()) // добавить предмет
                     {
                         list.Add(new TaskItem
                         {
