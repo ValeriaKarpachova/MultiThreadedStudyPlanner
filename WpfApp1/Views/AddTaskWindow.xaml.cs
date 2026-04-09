@@ -48,8 +48,6 @@ namespace WpfApp1
                 NewTask.CalculateImportance();
                 NewTask.CalculatePriority();
 
-                var mainWindow = Application.Current.Windows.OfType<Views.MainWindow>().FirstOrDefault();
-                mainWindow?.RefreshTasksView();
 
                 DialogResult = true;
             }

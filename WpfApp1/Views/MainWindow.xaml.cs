@@ -10,12 +10,18 @@ namespace WpfApp1.Views
 {
     public partial class MainWindow : Window
     {
-        private TaskManager manager = new TaskManager();
+        private TaskManager manager;
         private BackgroundProcessor _backgroundProcessor;
 
         public MainWindow()
         {
             InitializeComponent();
+
+            var db = new DatabaseService();
+            db.InitializeDatabase();
+
+            manager = new TaskManager(db);
+            manager.Load();
 
             TasksGrid.ItemsSource = manager.Tasks;
 
@@ -40,9 +46,13 @@ namespace WpfApp1.Views
         public void RefreshTasksView()
         {
             var view = CollectionViewSource.GetDefaultView(TasksGrid.ItemsSource);
+
             view.SortDescriptions.Clear();
-            view.SortDescriptions.Add(new SortDescription("Priority", ListSortDirection.Descending));
+            view.SortDescriptions.Add(
+                new SortDescription("Priority", ListSortDirection.Descending));
+
             view.Filter = t => !(t as TaskItem).IsCompleted;
+
             view.Refresh();
         }
 
@@ -53,9 +63,6 @@ namespace WpfApp1.Views
             if (window.ShowDialog() == true)
             {
                 manager.AddTask(window.NewTask);
-
-                window.NewTask.CalculatePriority();
-
                 RefreshTasksView();
             }
         }
@@ -63,6 +70,7 @@ namespace WpfApp1.Views
         private void Delete_Click(object sender, RoutedEventArgs e)
         {
             var task = (sender as Button).DataContext as TaskItem;
+
             manager.DeleteTask(task);
 
             RefreshTasksView();
@@ -70,15 +78,13 @@ namespace WpfApp1.Views
 
         private void Edit_Click(object sender, RoutedEventArgs e)
         {
-            var button = sender as Button;
-            var task = button.DataContext as TaskItem;
+            var task = (sender as Button).DataContext as TaskItem;
 
             var window = new EditTaskWindow(task);
 
             if (window.ShowDialog() == true)
             {
-                task.CalculatePriority();
-
+                manager.UpdateTask(task);
                 RefreshTasksView();
             }
         }
@@ -95,12 +101,12 @@ namespace WpfApp1.Views
         private void Task_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(TaskItem.IsCompleted))
-                TaskCompletedChanged(sender, null); 
+                TaskCompletedChanged(sender, null);
         }
 
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
-            _backgroundProcessor.Stop(); //останавливает фоновый процесс, чтобы он не продолжал работать после закрытия окна. в будущем останавливать не будет
+            _backgroundProcessor.Stop();
             base.OnClosing(e);
         }
     }
