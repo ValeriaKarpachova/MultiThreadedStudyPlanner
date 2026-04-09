@@ -3,7 +3,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using static WpfApp1.TaskItem;
+using WpfApp1.Services;
 
 namespace WpfApp1
 {
@@ -33,17 +33,9 @@ namespace WpfApp1
 
         private void Edit_Click(object sender, RoutedEventArgs e)
         {
-            // Проверяем корректность прогресса
-            if (!int.TryParse(ProgressBox.Text, out int progress))
+            if (!Validator.ValidateTask(NameBox.Text, ProgressBox.Text, out int progress, out string error))
             {
-                MessageBox.Show("Progress must be a number");
-                return;
-            }
-
-            // Проверяем имя
-            if (string.IsNullOrWhiteSpace(NameBox.Text))
-            {
-                MessageBox.Show("Task name cannot be empty");
+                MessageBox.Show(error);
                 return;
             }
 
@@ -52,17 +44,20 @@ namespace WpfApp1
                 Task.Name = NameBox.Text;
                 Task.Description = Description.Text;
                 Task.Progress = progress;
-                Task.Deadline = DeadlinePicker.SelectedDate ?? DateTime.Now;
+                Task.Deadline = DeadlinePicker.SelectedDate;
 
                 var selectedType = (TypeBox.SelectedItem as ComboBoxItem)?.Content.ToString();
-                Task.TaskType = selectedType ?? Task.TaskType;
+                
+                if (selectedType == "Без типу")
+                    Task.TaskType = null;
+                else
+                    Task.TaskType = selectedType;
 
                 Task.CalculateImportance();
                 Task.CalculatePriority();
 
-                // Обновляем DataGrid и пересортировку
                 CollectionViewSource.GetDefaultView(Application.Current.Windows
-                    .OfType<MainWindow>().First().TasksGrid.ItemsSource).Refresh();
+                    .OfType<Views.MainWindow>().First().TasksGrid.ItemsSource).Refresh();
 
                 DialogResult = true;
             }

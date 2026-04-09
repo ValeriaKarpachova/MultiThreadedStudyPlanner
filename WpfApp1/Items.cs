@@ -11,7 +11,7 @@ namespace WpfApp1
     {
         private string name;
         private string description;
-        private DateTime deadline;
+        private DateTime? deadline;
         private string taskType;
         private int priority;
         private int progress;
@@ -31,7 +31,7 @@ namespace WpfApp1
             set { description = value; OnPropertyChanged("Description"); }
         }
 
-        public DateTime Deadline
+        public DateTime? Deadline
         {
             get => deadline;
             set { deadline = value; OnPropertyChanged("Deadline"); }
@@ -79,7 +79,7 @@ namespace WpfApp1
 
         public void CalculateImportance()
         {
-            switch (TaskType)
+            switch (TaskType ?? "")
             {
                 case "Exam":
                 case "Diploma Project":
@@ -87,10 +87,6 @@ namespace WpfApp1
                     break;
 
                 case "Test":
-                    Importance = 9;
-                    break;
-
-                case "Thesis":
                 case "Internship":
                     Importance = 9;
                     break;
@@ -101,6 +97,7 @@ namespace WpfApp1
                     break;
 
                 case "Laboratory Work":
+                case "Thesis":
                     Importance = 7;
                     break;
 
@@ -125,7 +122,7 @@ namespace WpfApp1
                     break;
 
                 default:
-                    Importance = 5;
+                    Importance = 3;
                     break;
             }
         }
@@ -134,29 +131,20 @@ namespace WpfApp1
         {
             CalculateImportance();
 
-            double daysLeft = (Deadline - DateTime.Now).TotalDays;
+            double urgency = 0;
 
-            double urgency;
-
-            if (daysLeft >= 0)
+            if (Deadline.HasValue)
             {
-                //(экспоненциальное затухание)
-                urgency = Math.Exp(-0.1 * daysLeft);
-            }
-            else
-            {
-                double overdueDays = Math.Abs(daysLeft);
-
-                urgency = 1 + Math.Log(overdueDays + 1);
+                double daysLeft = (Deadline.Value - DateTime.Now).TotalDays;
+                urgency = 1 / (daysLeft + 1); 
             }
 
             double completionFactor = (100.0 - Progress) / 100.0;
-            double importance = Importance / 10.0;
 
-            double result =
-                0.5 * urgency +          
-                0.4 * completionFactor + 
-                0.1 * importance; 
+            double result = 
+                0.3 * urgency + 
+                0.2 * Importance + 
+                0.5 * completionFactor;
 
             Priority = (int)(result * 100);
         }

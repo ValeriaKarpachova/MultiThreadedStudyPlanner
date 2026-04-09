@@ -19,6 +19,7 @@
 
         <TextBlock Text="Task Type"/>
         <ComboBox x:Name="TypeBox" Margin="0,5">
+            <ComboBoxItem Content="Без типу" IsSelected="True"/>
             <ComboBoxItem Content="Lecture"/>
             <ComboBoxItem Content="Laboratory Work"/>
             <ComboBoxItem Content="Independent Study"/>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
+using WpfApp1.Services;
 using static WpfApp1.TaskItem;
 
 namespace WpfApp1
@@ -25,19 +26,26 @@ namespace WpfApp1
 
         private void Add_Click(object sender, RoutedEventArgs e)
         {
+            if (!Validator.ValidateTask(NameBox.Text, ProgressBox.Text, out int progress, out string error))
+            {
+                MessageBox.Show(error);
+                return;
+            }
+
             try
             {
                 if (NewTask == null)
                     NewTask = new TaskItem();
 
                 NewTask.Name = NameBox.Text;
-                NewTask.Progress = int.Parse(ProgressBox.Text);
-                NewTask.Deadline = DeadlinePicker.SelectedDate ?? DateTime.Now;
+                NewTask.Progress = progress;
+                NewTask.Deadline = DeadlinePicker.SelectedDate;
 
                 var selectedType = (TypeBox.SelectedItem as ComboBoxItem)?.Content.ToString();
-                NewTask.TaskType = selectedType ?? "Lecture"; 
+                NewTask.TaskType = selectedType == "Без типу" ? null : selectedType;
 
                 NewTask.CalculateImportance();
+                NewTask.CalculatePriority();
 
                 DialogResult = true;
             }

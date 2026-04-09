@@ -4,7 +4,7 @@ using System.Windows.Controls;
 using System.ComponentModel;
 using System.Windows.Data;
 
-namespace WpfApp1
+namespace WpfApp1.Views
 {
     public partial class MainWindow : Window
     {

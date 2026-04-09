@@ -66,21 +66,22 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="EditTaskWindow.xaml.cs">
+    <Compile Include="Services\Validator.cs" />
+    <Compile Include="Views\EditTaskWindow.xaml.cs">
       <DependentUpon>EditTaskWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="AddTaskWindow.xaml.cs">
+    <Compile Include="Views\AddTaskWindow.xaml.cs">
       <DependentUpon>AddTaskWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="TaskManager.cs" />
-    <Page Include="EditTaskWindow.xaml">
+    <Compile Include="Services\TaskManager.cs" />
+    <Page Include="Views\EditTaskWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="AddTaskWindow.xaml">
+    <Page Include="Views\AddTaskWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MainWindow.xaml">
+    <Page Include="Views\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -89,7 +90,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Items.cs" />
-    <Compile Include="MainWindow.xaml.cs">
+    <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
