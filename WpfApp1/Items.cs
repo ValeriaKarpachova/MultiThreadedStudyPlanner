@@ -129,20 +129,34 @@ namespace WpfApp1
                     break;
             }
         }
-         /// <summary>
-         /// Доработать метод подсчета приоритета. При сдиге дедлайна дальше приоритет не уменшается(исправить) и что бы % прогреса влиял на приоритетность более существенно, возможно уменшьшить влияние типа задания
-         /// </summary>
+
         public void CalculatePriority()
         {
             CalculateImportance();
 
             double daysLeft = (Deadline - DateTime.Now).TotalDays;
-            if (daysLeft < 0) daysLeft = 0;
 
-            double urgency = 1.0 / (daysLeft + 1);
+            double urgency;
+
+            if (daysLeft >= 0)
+            {
+                //(экспоненциальное затухание)
+                urgency = Math.Exp(-0.1 * daysLeft);
+            }
+            else
+            {
+                double overdueDays = Math.Abs(daysLeft);
+
+                urgency = 1 + Math.Log(overdueDays + 1);
+            }
+
             double completionFactor = (100.0 - Progress) / 100.0;
+            double importance = Importance / 10.0;
 
-            double result = 0.5 * urgency + 0.3 * Importance + 0.2 * completionFactor;
+            double result =
+                0.5 * urgency +          
+                0.4 * completionFactor + 
+                0.1 * importance; 
 
             Priority = (int)(result * 100);
         }
