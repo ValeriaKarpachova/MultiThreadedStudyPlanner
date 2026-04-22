@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WpfApp1.Services
+namespace WpfApp2.Services
 {
     public static class Validator
     {
@@ -34,7 +34,7 @@ namespace WpfApp1.Services
                 }
             }
             return true;
-            
+
         }
     }
 }

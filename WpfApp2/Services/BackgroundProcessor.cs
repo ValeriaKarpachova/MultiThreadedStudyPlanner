@@ -4,9 +4,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
-using WpfApp1.Views;
+using WpfApp2.Views;
+using WpfApp2;
+using WpfApp2.Services;
 
-namespace WpfApp1.Services
+namespace WpfApp2.Services
 {
     public class BackgroundProcessor
     {
@@ -63,7 +65,7 @@ namespace WpfApp1.Services
                 }
 
                 var mainWindow = Application.Current.Windows.OfType<MainWindow>().FirstOrDefault();
-                mainWindow?.RefreshTasksView(); 
+                mainWindow?.RefreshTasksView();
             });
         }
     }

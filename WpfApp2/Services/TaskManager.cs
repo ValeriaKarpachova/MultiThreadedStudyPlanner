@@ -1,7 +1,8 @@
 ﻿using System.Collections.ObjectModel;
-using WpfApp1.Services;
+using System.Windows.Controls;
+using WpfApp2.Services;
 
-namespace WpfApp1
+namespace WpfApp2
 {
     public class TaskManager
     {
@@ -17,7 +18,7 @@ namespace WpfApp1
         {
             task.PropertyChanged += (s, e) =>
             {
-                _db.UpdateTask(task); 
+                _db.UpdateTask(task);
             };
         }
 
@@ -37,7 +38,7 @@ namespace WpfApp1
         public void AddTask(TaskItem task)
         {
             _db.AddTask(task);
-            Subscribe(task); 
+            Subscribe(task);
             Tasks.Add(task);
         }
 

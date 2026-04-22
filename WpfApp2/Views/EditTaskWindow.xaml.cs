@@ -3,9 +3,9 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using WpfApp1.Services;
+using WpfApp2.Services;
 
-namespace WpfApp1
+namespace WpfApp2
 {
     public partial class EditTaskWindow : Window
     {
@@ -47,7 +47,7 @@ namespace WpfApp1
                 Task.Deadline = DeadlinePicker.SelectedDate;
 
                 var selectedType = (TypeBox.SelectedItem as ComboBoxItem)?.Content.ToString();
-                
+
                 if (selectedType == "Без типу")
                     Task.TaskType = null;
                 else

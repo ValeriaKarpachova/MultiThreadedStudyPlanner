@@ -2,15 +2,15 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using WpfApp1.Services;
-using static WpfApp1.TaskItem;
+using WpfApp2.Services;
+using static WpfApp2.TaskItem;
 
-namespace WpfApp1
+namespace WpfApp2
 {
     public partial class AddTaskWindow : Window
     {
         public TaskItem NewTask { get; private set; }
-        
+
         public AddTaskWindow(TaskItem task = null)
         {
             InitializeComponent();
@@ -21,7 +21,7 @@ namespace WpfApp1
                 ProgressBox.Text = task.Progress.ToString();
                 DeadlinePicker.SelectedDate = task.Deadline;
 
-                NewTask = task; 
+                NewTask = task;
             }
         }
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 
-namespace WpfApp1
+namespace WpfApp2
 {
     public class TaskItem : INotifyPropertyChanged
     {
@@ -42,7 +42,7 @@ namespace WpfApp1
                 deadline = value;
                 OnPropertyChanged("Deadline");
 
-                CalculatePriority(); 
+                CalculatePriority();
             }
         }
 
@@ -68,7 +68,7 @@ namespace WpfApp1
                 if (priority != value)
                 {
                     priority = value;
-                    OnPropertyChanged("Priority"); 
+                    OnPropertyChanged("Priority");
                 }
             }
         }
@@ -102,7 +102,7 @@ namespace WpfApp1
             set
             {
                 if (value)
-                    Progress = 100;  
+                    Progress = 100;
                 OnPropertyChanged(nameof(IsCompleted));
                 OnPropertyChanged(nameof(Progress));
             }
@@ -174,14 +174,14 @@ namespace WpfApp1
             if (Deadline.HasValue)
             {
                 double daysLeft = (Deadline.Value - DateTime.Now).TotalDays;
-                urgency = 1 / (daysLeft + 1); 
+                urgency = 1 / (daysLeft + 1);
             }
 
             double completionFactor = (100.0 - Progress) / 100.0;
 
-            double result = 
-                0.3 * urgency + 
-                0.2 * Importance + 
+            double result =
+                0.3 * urgency +
+                0.2 * Importance +
                 0.5 * completionFactor;
 
             Priority = (int)(result * 100);

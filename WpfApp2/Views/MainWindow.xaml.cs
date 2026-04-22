@@ -4,9 +4,9 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using WpfApp1.Services;
+using WpfApp2.Services;
 
-namespace WpfApp1.Views
+namespace WpfApp2.Views
 {
     public partial class MainWindow : Window
     {

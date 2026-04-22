@@ -1,4 +1,4 @@
-﻿<Window x:Class="WpfApp1.Views.MainWindow"
+﻿<Window x:Class="WpfApp2.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="600" Width="1000">
@@ -44,7 +44,7 @@
             <Button Content="Course 1"  Style="{StaticResource FlatButton}"/>
             <Button Content="Course 2" Style="{StaticResource FlatButton}"/>
             <Button Content="Course 3"  Style="{StaticResource FlatButton}"/>
-            
+
         </StackPanel>
 
         <!-- MAIN TABLE -->
@@ -60,7 +60,7 @@
             <DataGrid.Columns>
 
                 <DataGridTemplateColumn Width="0.5*"/>
-                
+
                 <!-- Task Name -->
                 <DataGridTextColumn Header="Task"
                                     Binding="{Binding Name}"
@@ -73,7 +73,7 @@
                 <DataGridTextColumn Header="Subject"
                     Binding="{Binding Subject}"
                     Width="2*"/>
-                
+
                 <!-- Progress -->
                 <DataGridTemplateColumn Header="Progress" Width="1.5*">
                     <DataGridTemplateColumn.CellTemplate>
