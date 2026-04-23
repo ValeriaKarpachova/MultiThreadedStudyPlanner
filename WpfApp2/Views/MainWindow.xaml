@@ -3,52 +3,52 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="600" Width="1000">
 
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="3.8*"/>
-        </Grid.ColumnDefinitions>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="3.8*"/>
+            </Grid.ColumnDefinitions>
 
-        <Grid.RowDefinitions>
-            <RowDefinition Height="50"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-        <!-- HEADER -->
-        <TextBlock Grid.Row="0" Grid.Column="0"
+            <!-- HEADER -->
+            <TextBlock Grid.Row="0" Grid.Column="0"
                    Text="NameApp"
                    VerticalAlignment="Center"
                    Margin="10"/>
 
-        <Button Grid.Row="0" Grid.Column="1"
+            <Button Grid.Row="0" Grid.Column="1"
         Width="35" Height="35"
         HorizontalAlignment="Right"
         Margin="5"
         Click="AddTask_Click"
         Padding="0">
 
-            <TextBlock Text="+"
+                <TextBlock Text="+"
                FontSize="18"
                FontWeight="Bold"
                HorizontalAlignment="Center"
                VerticalAlignment="Center"/>
-        </Button>
+            </Button>
 
-        <!-- LEFT PANEL -->
-        <StackPanel Grid.Row="1" Grid.Column="0" Margin="5">
-            <Button Content="Home Page" Margin="0,5"/>
-            <Button Content="Calendar" Margin="0,5"/>
+            <!-- LEFT PANEL -->
+            <StackPanel Grid.Row="1" Grid.Column="0" Margin="5">
+                <Button Content="Home Page" Margin="0,5"/>
+                <Button Content="Calendar" Margin="0,5"/>
 
-            <TextBlock Text="List of courses" Margin="0,10,0,5"/>
+                <TextBlock Text="List of courses" Margin="0,10,0,5"/>
 
-            <Button Content="Course 1"  Style="{StaticResource FlatButton}"/>
-            <Button Content="Course 2" Style="{StaticResource FlatButton}"/>
-            <Button Content="Course 3"  Style="{StaticResource FlatButton}"/>
+                <Button Content="Course 1"  Style="{StaticResource FlatButton}"/>
+                <Button Content="Course 2" Style="{StaticResource FlatButton}"/>
+                <Button Content="Course 3"  Style="{StaticResource FlatButton}"/>
 
-        </StackPanel>
+            </StackPanel>
 
-        <!-- MAIN TABLE -->
-        <DataGrid Grid.Row="1" Grid.Column="1"
+            <!-- MAIN TABLE -->
+            <DataGrid Grid.Row="1" Grid.Column="1"
             x:Name="TasksGrid"
             AutoGenerateColumns="False"
             CanUserAddRows="False"
@@ -57,78 +57,77 @@
             HorizontalScrollBarVisibility="Disabled"
             ColumnWidth="*">
 
-            <DataGrid.Columns>
+                <DataGrid.Columns>
 
-                <DataGridTemplateColumn Width="0.5*"/>
+                    <DataGridTemplateColumn Width="0.5*"/>
 
-                <!-- Task Name -->
-                <DataGridTextColumn Header="Task"
+                    <!-- Task Name -->
+                    <DataGridTextColumn Header="Task"
                                     Binding="{Binding Name}"
                                     Width="2*"/>
 
-                <DataGridTextColumn Header="Description"
+                    <DataGridTextColumn Header="Description"
                     Binding="{Binding Description}"
                     Width="3*"/>
 
-                <DataGridTextColumn Header="Subject"
+                    <DataGridTextColumn Header="Subject"
                     Binding="{Binding Subject}"
                     Width="2*"/>
 
-                <!-- Progress -->
-                <DataGridTemplateColumn Header="Progress" Width="1.5*">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <ProgressBar Value="{Binding Progress}"
+                    <!-- Progress -->
+                    <DataGridTemplateColumn Header="Progress" Width="1.5*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ProgressBar Value="{Binding Progress}"
                                          Height="15"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
 
-                <!-- Deadline -->
-                <DataGridTextColumn Header="Deadline"
+                    <!-- Deadline -->
+                    <DataGridTextColumn Header="Deadline"
                     Binding="{Binding Deadline, StringFormat={}{0:dd.MM.yyyy HH:mm}}"
                     Width="1.5*"/>
 
-                <!-- Buttons -->
-                <DataGridCheckBoxColumn Header="Completed"
-                        Binding="{Binding IsCompleted, Mode=TwoWay}"
+                    <!-- Buttons -->
+                    <DataGridCheckBoxColumn Header="Completed"
+                        Binding="{Binding IsCompleted, Mode=OneWay}"
                         Width="0.7*">
-                    <DataGridCheckBoxColumn.ElementStyle>
-                        <Style TargetType="CheckBox">
-                            <EventSetter Event="Checked" Handler="TaskCompletedChanged"/>
-                            <EventSetter Event="Unchecked" Handler="TaskCompletedChanged"/>
-                        </Style>
-                    </DataGridCheckBoxColumn.ElementStyle>
-                    <DataGridCheckBoxColumn.EditingElementStyle>
-                        <Style TargetType="CheckBox">
-                            <EventSetter Event="Checked" Handler="TaskCompletedChanged"/>
-                            <EventSetter Event="Unchecked" Handler="TaskCompletedChanged"/>
-                        </Style>
-                    </DataGridCheckBoxColumn.EditingElementStyle>
-                </DataGridCheckBoxColumn>
+                        <DataGridCheckBoxColumn.ElementStyle>
+                            <Style TargetType="CheckBox">
+                                <EventSetter Event="Checked" Handler="TaskCompletedChanged"/>
 
-                <DataGridTemplateColumn Header="Actions" Width="1.5*">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
+                            </Style>
+                        </DataGridCheckBoxColumn.ElementStyle>
+                        <DataGridCheckBoxColumn.EditingElementStyle>
+                            <Style TargetType="CheckBox">
+                                <EventSetter Event="Checked" Handler="TaskCompletedChanged"/>
+                                <EventSetter Event="Unchecked" Handler="TaskCompletedChanged"/>
+                            </Style>
+                        </DataGridCheckBoxColumn.EditingElementStyle>
+                    </DataGridCheckBoxColumn>
 
-                                <Button Content="Edit"
+                    <DataGridTemplateColumn Header="Actions" Width="1.5*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+
+                                    <Button Content="Edit"
                                         Margin="2"
                                         Padding="5,2"
                                         Click="Edit_Click"/>
 
-                                <Button Content="Delete"
+                                    <Button Content="Delete"
                                         Margin="2"
                                         Padding="5,2"
                                         Click="Delete_Click"/>
 
-                            </StackPanel>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
 
-            </DataGrid.Columns>
-        </DataGrid>
-
-    </Grid>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
 </Window>

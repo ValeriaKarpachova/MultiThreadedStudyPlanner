@@ -16,16 +16,16 @@ namespace WpfApp2.Services
 
             var command = connection.CreateCommand();
             command.CommandText = @"
-            CREATE TABLE IF NOT EXISTS Tasks (
-                Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                Name TEXT NOT NULL,
-                Description TEXT,
-                Progress INTEGER,
-                Deadline TEXT,
-                TaskType TEXT,
-                IsCompleted INTEGER,
-                Priority INTEGER
-            );";
+                CREATE TABLE IF NOT EXISTS Tasks (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    Name TEXT NOT NULL,
+                    Description TEXT,
+                    Progress INTEGER,
+                    Deadline TEXT,
+                    TaskType TEXT,
+                    Priority INTEGER,
+                    EstimatedHours REAL
+                );";
 
             command.ExecuteNonQuery();
         }
@@ -41,6 +41,7 @@ namespace WpfApp2.Services
             command.CommandText = "SELECT * FROM Tasks";
 
             using var reader = command.ExecuteReader();
+
             while (reader.Read())
             {
                 list.Add(new TaskItem
@@ -51,8 +52,8 @@ namespace WpfApp2.Services
                     Progress = reader.GetInt32(3),
                     Deadline = reader.IsDBNull(4) ? null : DateTime.Parse(reader.GetString(4)),
                     TaskType = reader.IsDBNull(5) ? "" : reader.GetString(5),
-                    IsCompleted = reader.GetInt32(6) == 1,
-                    Priority = reader.GetInt32(7)
+                    Priority = reader.GetInt32(6),
+                    EstimatedHours = reader.IsDBNull(7) ? 0.0 : reader.GetDouble(7)
                 });
             }
 
@@ -66,18 +67,18 @@ namespace WpfApp2.Services
 
             var command = connection.CreateCommand();
             command.CommandText = @"
-            INSERT INTO Tasks 
-            (Name, Description, Progress, Deadline, TaskType, IsCompleted, Priority)
-            VALUES
-            (@Name, @Description, @Progress, @Deadline, @TaskType, @IsCompleted, @Priority);";
+                INSERT INTO Tasks 
+                (Name, Description, Progress, Deadline, TaskType, Priority, EstimatedHours)
+                VALUES
+                (@Name, @Description, @Progress, @Deadline, @TaskType, @Priority, @EstimatedHours);";
 
             command.Parameters.AddWithValue("@Name", task.Name);
             command.Parameters.AddWithValue("@Description", task.Description ?? "");
             command.Parameters.AddWithValue("@Progress", task.Progress);
-            command.Parameters.AddWithValue("@Deadline", task.Deadline?.ToString("o"));
+            command.Parameters.AddWithValue("@Deadline", task.Deadline.HasValue? task.Deadline.Value.ToString("o") : DBNull.Value);
             command.Parameters.AddWithValue("@TaskType", task.TaskType ?? "");
-            command.Parameters.AddWithValue("@IsCompleted", task.IsCompleted ? 1 : 0);
             command.Parameters.AddWithValue("@Priority", task.Priority);
+            command.Parameters.AddWithValue("@EstimatedHours", task.EstimatedHours);
 
             command.ExecuteNonQuery();
 
@@ -105,23 +106,23 @@ namespace WpfApp2.Services
 
             var command = connection.CreateCommand();
             command.CommandText = @"
-            UPDATE Tasks SET
-                Name = @Name,
-                Description = @Description,
-                Progress = @Progress,
-                Deadline = @Deadline,
-                TaskType = @TaskType,
-                IsCompleted = @IsCompleted,
-                Priority = @Priority
-            WHERE Id = @Id";
+                UPDATE Tasks SET
+                    Name = @Name,
+                    Description = @Description,
+                    Progress = @Progress,
+                    Deadline = @Deadline,
+                    TaskType = @TaskType,
+                    Priority = @Priority,
+                    EstimatedHours = @EstimatedHours
+                WHERE Id = @Id";
 
             command.Parameters.AddWithValue("@Name", task.Name);
             command.Parameters.AddWithValue("@Description", task.Description ?? "");
             command.Parameters.AddWithValue("@Progress", task.Progress);
             command.Parameters.AddWithValue("@Deadline", task.Deadline?.ToString("o"));
             command.Parameters.AddWithValue("@TaskType", task.TaskType ?? "");
-            command.Parameters.AddWithValue("@IsCompleted", task.IsCompleted ? 1 : 0);
             command.Parameters.AddWithValue("@Priority", task.Priority);
+            command.Parameters.AddWithValue("@EstimatedHours", task.EstimatedHours);
             command.Parameters.AddWithValue("@Id", task.Id);
 
             command.ExecuteNonQuery();

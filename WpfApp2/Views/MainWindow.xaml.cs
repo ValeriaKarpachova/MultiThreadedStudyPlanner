@@ -10,8 +10,8 @@ namespace WpfApp2.Views
 {
     public partial class MainWindow : Window
     {
-        private TaskManager manager;
-        private BackgroundProcessor _backgroundProcessor;
+        private readonly TaskManager manager;
+        private readonly BackgroundProcessor _backgroundProcessor;
 
         public MainWindow()
         {
@@ -25,17 +25,7 @@ namespace WpfApp2.Views
 
             TasksGrid.ItemsSource = manager.Tasks;
 
-            foreach (var task in manager.Tasks)
-                task.PropertyChanged += Task_PropertyChanged;
-
-            manager.Tasks.CollectionChanged += (s, e) =>
-            {
-                if (e.NewItems != null)
-                {
-                    foreach (TaskItem newTask in e.NewItems)
-                        newTask.PropertyChanged += Task_PropertyChanged;
-                }
-            };
+            SubscribeToTasks();
 
             _backgroundProcessor = new BackgroundProcessor(manager, TimeSpan.FromSeconds(30));
             _backgroundProcessor.Start();
@@ -49,11 +39,33 @@ namespace WpfApp2.Views
 
             view.SortDescriptions.Clear();
             view.SortDescriptions.Add(
-                new SortDescription("Priority", ListSortDirection.Descending));
+                new SortDescription(nameof(TaskItem.Priority), ListSortDirection.Descending));
 
             view.Filter = t => !(t as TaskItem).IsCompleted;
 
             view.Refresh();
+        }
+
+        private void SubscribeToTasks()
+        {
+            foreach (var task in manager.Tasks)
+                task.PropertyChanged += Task_PropertyChanged;
+
+            manager.Tasks.CollectionChanged += (s, e) =>
+            {
+                if (e.NewItems == null) return;
+
+                foreach (TaskItem newTask in e.NewItems)
+                    newTask.PropertyChanged += Task_PropertyChanged;
+            };
+        }
+
+        private void Task_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(TaskItem.IsCompleted))
+            {
+                RefreshTasksView();
+            }
         }
 
         private void AddTask_Click(object sender, RoutedEventArgs e)
@@ -73,15 +85,15 @@ namespace WpfApp2.Views
             if (task == null) return;
 
             manager.DeleteTask(task);
-
             RefreshTasksView();
         }
 
         private void Edit_Click(object sender, RoutedEventArgs e)
         {
-            var task = (sender as Button).DataContext as TaskItem;
+            var task = (sender as Button)?.DataContext as TaskItem;
+            if (task == null) return;
 
-            var window = new EditTaskWindow(task);
+            var window = new EditTaskWindow(task, manager);
 
             if (window.ShowDialog() == true)
             {
@@ -91,20 +103,17 @@ namespace WpfApp2.Views
 
         private void TaskCompletedChanged(object sender, RoutedEventArgs e)
         {
-            Dispatcher.InvokeAsync(() =>
+            if (sender is CheckBox cb && cb.DataContext is TaskItem task)
             {
-                if (TasksGrid.CommitEdit(DataGridEditingUnit.Row, true))
-                    RefreshTasksView();
-            }, System.Windows.Threading.DispatcherPriority.Background);
+                task.Progress = cb.IsChecked == true ? 100 : task.Progress;
+
+                manager.UpdateTask(task);
+
+                RefreshTasksView();
+            }
         }
 
-        private void Task_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(TaskItem.IsCompleted))
-                TaskCompletedChanged(sender, null);
-        }
-
-        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+        protected override void OnClosing(CancelEventArgs e)
         {
             _backgroundProcessor.Stop();
             base.OnClosing(e);

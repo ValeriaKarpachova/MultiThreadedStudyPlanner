@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using WpfApp2.Services;
-using static WpfApp2.TaskItem;
 
 namespace WpfApp2
 {
@@ -15,47 +13,44 @@ namespace WpfApp2
         {
             InitializeComponent();
 
+            NewTask = task ?? new TaskItem();
+
             if (task != null)
             {
                 NameBox.Text = task.Name;
                 ProgressBox.Text = task.Progress.ToString();
                 DeadlinePicker.SelectedDate = task.Deadline;
-
-                NewTask = task;
+                EstimatedBox.Text = task.EstimatedHours.ToString();
             }
         }
 
         private void Add_Click(object sender, RoutedEventArgs e)
         {
-            if (!Validator.ValidateTask(NameBox.Text, ProgressBox.Text, out int progress, out string error))
+            if (!Validator.ValidateTask(
+                    NameBox.Text,
+                    ProgressBox.Text,
+                    EstimatedBox.Text,
+                    out int progress,
+                    out double hours,
+                    out string error))
             {
                 MessageBox.Show(error);
                 return;
             }
 
-            try
-            {
-                if (NewTask == null)
-                    NewTask = new TaskItem();
+            NewTask.Name = NameBox.Text;
+            NewTask.Progress = progress;
+            NewTask.Deadline = DeadlinePicker.SelectedDate;
 
-                NewTask.Name = NameBox.Text;
-                NewTask.Progress = progress;
-                NewTask.Deadline = DeadlinePicker.SelectedDate;
+            var selectedType = (TypeBox.SelectedItem as ComboBoxItem)?.Content?.ToString();
+            NewTask.TaskType = selectedType == "Без типу" ? null : selectedType;
 
-                var selectedType = (TypeBox.SelectedItem as ComboBoxItem)?.Content.ToString();
-                NewTask.TaskType = selectedType == "Без типу" ? null : selectedType;
+            NewTask.EstimatedHours = hours;
 
-                NewTask.CalculateImportance();
-                NewTask.CalculatePriority();
+            PlannerService.CalculatePriorities(new List<TaskItem> { NewTask });
 
+            DialogResult = true;
 
-                DialogResult = true;
-            }
-            catch
-            {
-                MessageBox.Show("Invalid input");
-            }
         }
-
     }
 }

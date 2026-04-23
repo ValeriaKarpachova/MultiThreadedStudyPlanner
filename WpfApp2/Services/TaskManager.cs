@@ -1,13 +1,16 @@
 ﻿using System.Collections.ObjectModel;
-using System.Windows.Controls;
+using System.Linq;
 using WpfApp2.Services;
 
-namespace WpfApp2
+namespace WpfApp2.Services
 {
     public class TaskManager
     {
-        public ObservableCollection<TaskItem> Tasks { get; set; } = new ObservableCollection<TaskItem>();
+        public ObservableCollection<TaskItem> Tasks { get; set; } = new();
+
         private readonly DatabaseService _db;
+
+        public bool IsEditing { get; set; }
 
         public TaskManager(DatabaseService db)
         {
@@ -40,12 +43,24 @@ namespace WpfApp2
             _db.AddTask(task);
             Subscribe(task);
             Tasks.Add(task);
+            CheckOverload();
         }
 
         public void DeleteTask(TaskItem task)
         {
             Tasks.Remove(task);
             _db.DeleteTask(task.Id);
+        }
+
+        public void UpdateTask(TaskItem task)
+        {
+            _db.UpdateTask(task);
+            CheckOverload();
+        }
+
+        private void CheckOverload()
+        {
+            OverloadService.CheckAndNotify(Tasks.ToList(), false);
         }
     }
 }
