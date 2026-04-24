@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
 using WpfApp2.Services;
+using System.Windows;
 
 namespace WpfApp2.Services
 {
@@ -50,14 +51,22 @@ namespace WpfApp2.Services
         {
             _db.AddTask(task);
             Subscribe(task);
-            Tasks.Add(task);
+
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                Tasks.Add(task);
+            });
 
             CheckOverload();
         }
 
         public void DeleteTask(TaskItem task)
         {
-            Tasks.Remove(task);
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                Tasks.Remove(task);
+            });
+
             _db.DeleteTask(task.Id);
         }
 
@@ -67,6 +76,18 @@ namespace WpfApp2.Services
 
             if (!IsEditing)
                 CheckOverload();
+        }
+
+        public void ApplyUpdatedPriorities(List<TaskItem> updated)
+        {
+            foreach (var updatedTask in updated)
+            {
+                var existing = Tasks.FirstOrDefault(t => t.Id == updatedTask.Id);
+                if (existing != null)
+                {
+                    existing.Priority = updatedTask.Priority;
+                }
+            }
         }
 
         private void CheckOverload()

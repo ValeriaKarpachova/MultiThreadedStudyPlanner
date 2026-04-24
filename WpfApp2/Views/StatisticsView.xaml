@@ -1,0 +1,19 @@
+<UserControl x:Class="WpfApp2.Views.StatisticsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF">
+
+    <StackPanel Margin="10">
+
+        <TextBlock Text="Statistics"
+                   FontSize="20"
+                   Margin="0,0,0,10"/>
+
+        <TextBlock x:Name="SummaryText"
+                   Margin="0,0,0,20"/>
+
+        <lvc:CartesianChart x:Name="TasksChart"
+                            Height="300"/>
+
+    </StackPanel>
+</UserControl>

@@ -30,14 +30,14 @@ namespace WpfApp2.Services
                 {
                     try
                     {
+                        var tasksCopy = _taskManager.Tasks.ToList();
+
+                        PlannerService.CalculatePriorities(tasksCopy);
+
                         await Application.Current.Dispatcher.InvokeAsync(() =>
                         {
-                            var tasksCopy = _taskManager.Tasks.ToList(); 
-
-                            foreach (var task in tasksCopy)
-                            PlannerService.CalculatePriorities(tasksCopy);
+                            _taskManager.ApplyUpdatedPriorities(tasksCopy);
                         });
-
                     }
                     catch (Exception ex)
                     {

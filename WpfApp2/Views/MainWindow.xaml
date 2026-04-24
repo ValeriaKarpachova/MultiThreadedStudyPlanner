@@ -3,124 +3,72 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="600" Width="1000">
 
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*"/>
-                <ColumnDefinition Width="3.8*"/>
-            </Grid.ColumnDefinitions>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="3.8*"/>
+        </Grid.ColumnDefinitions>
 
-            <Grid.RowDefinitions>
-                <RowDefinition Height="50"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-            <!-- HEADER -->
-            <TextBlock Grid.Row="0" Grid.Column="0"
+        <!-- HEADER -->
+        <TextBlock Grid.Row="0" Grid.Column="0"
                    Text="NameApp"
                    VerticalAlignment="Center"
                    Margin="10"/>
 
-            <Button Grid.Row="0" Grid.Column="1"
-                    Width="35" Height="35"
-                    HorizontalAlignment="Right"
-                    Margin="5"
-                    Click="AddTask_Click"
-                    Padding="0">
+        <Button Grid.Row="0" Grid.Column="1"
+                Width="35" Height="35"
+                HorizontalAlignment="Right"
+                Margin="5"
+                Click="AddTask_Click"
+                Padding="0">
 
-                <TextBlock Text="+"
-               FontSize="18"
-               FontWeight="Bold"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center"/>
-            </Button>
+            <TextBlock Text="+"
+                       FontSize="18"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
+        </Button>
 
         <!-- LEFT PANEL -->
         <StackPanel Grid.Row="1" Grid.Column="0" Margin="10">
 
             <Button Content="Home"
-            Style="{StaticResource FlatButton}"
-            Margin="0,5"
-            Click="Home_Click"/>
+                    Style="{StaticResource FlatButton}"
+                    Margin="0,5"
+                    Click="Home_Click"/>
 
             <Button Content="Today"
-            Style="{StaticResource FlatButton}"
-            Margin="0,5"
-            Click="Today_Click"/>
+                    Style="{StaticResource FlatButton}"
+                    Margin="0,5"
+                    Click="Today_Click"/>
 
             <Button Content="Completed"
-            Style="{StaticResource FlatButton}"
-            Margin="0,5"
-            Click="Completed_Click"/>
+                    Style="{StaticResource FlatButton}"
+                    Margin="0,5"
+                    Click="Completed_Click"/>
 
             <Button Content="Calendar"
-            Style="{StaticResource FlatButton}"
-            Margin="0,5"
-            Click="Calendar_Click"/>
+                    Style="{StaticResource FlatButton}"
+                    Margin="0,5"
+                    Click="Calendar_Click"/>
+
+            <Button Content="Statistics"
+                    Style="{StaticResource FlatButton}"
+                    Margin="0,5"
+                    Click="Statistics_Click"/>
 
         </StackPanel>
 
-        <!-- MAIN TABLE -->
-        <DataGrid Grid.Row="1" Grid.Column="1"
-          x:Name="TasksGrid"
-          AutoGenerateColumns="False"
-          CanUserAddRows="False"
-          SelectionMode="Single"
-          Margin="5"
-          HorizontalScrollBarVisibility="Disabled"
-          ColumnWidth="*">
+        <!-- MAIN CONTENT AREA -->
+        <ContentControl Grid.Row="1"
+                        Grid.Column="1"
+                        x:Name="MainContent"
+                        Margin="5"/>
 
-            <DataGrid.Columns>
-
-                <!-- пустая колонка (если тебе нужна для отступа) -->
-                <DataGridTemplateColumn Width="0.5*"/>
-
-                <!-- Task Name -->
-                <DataGridTextColumn Header="Task"
-                            Binding="{Binding Name}"
-                            Width="2*"/>
-
-                <!-- Description -->
-                <DataGridTextColumn Header="Description"
-                            Binding="{Binding Description}"
-                            Width="3*"/>
-
-                <!-- Progress -->
-                <DataGridTemplateColumn Header="Progress" Width="1.5*">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <ProgressBar Value="{Binding Progress}"
-                                 Height="15"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-
-                <!-- Deadline -->
-                <DataGridTextColumn Header="Deadline"
-                            Binding="{Binding Deadline, StringFormat={}{0:dd.MM.yyyy HH:mm}}"
-                            Width="1.5*"/>
-
-                <!-- Actions -->
-                <DataGridTemplateColumn Header="Actions" Width="1.5*">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-
-                                <Button Content="Edit"
-                                Margin="2"
-                                Padding="5,2"
-                                Click="Edit_Click"/>
-
-                                <Button Content="Delete"
-                                Margin="2"
-                                Padding="5,2"
-                                Click="Delete_Click"/>
-
-                            </StackPanel>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-
-            </DataGrid.Columns>
-        </DataGrid>
     </Grid>
 </Window>

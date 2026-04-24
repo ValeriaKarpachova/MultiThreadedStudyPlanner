@@ -1,0 +1,67 @@
+<UserControl x:Class="WpfApp2.Views.TasksView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid>
+
+        <DataGrid x:Name="TasksGrid"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  SelectionMode="Single"
+                  Margin="5"
+                  HorizontalScrollBarVisibility="Disabled"
+                  ColumnWidth="*">
+
+            <DataGrid.Columns>
+
+                <!-- Task Name -->
+                <DataGridTextColumn Header="Task"
+                                    Binding="{Binding Name}"
+                                    Width="2*"/>
+
+                <!-- Description -->
+                <DataGridTextColumn Header="Description"
+                                    Binding="{Binding Description}"
+                                    Width="3*"/>
+
+                <!-- Progress -->
+                <DataGridTemplateColumn Header="Progress" Width="1.5*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ProgressBar Value="{Binding Progress}"
+                                         Height="15"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <!-- Deadline -->
+                <DataGridTextColumn Header="Deadline"
+                                    Binding="{Binding Deadline, StringFormat={}{0:dd.MM.yyyy HH:mm}}"
+                                    Width="1.5*"/>
+
+                <!-- Actions -->
+                <DataGridTemplateColumn Header="Actions" Width="1.5*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+
+                                <Button Content="Edit"
+                                        Margin="2"
+                                        Padding="5,2"
+                                        Click="Edit_Click"/>
+
+                                <Button Content="Delete"
+                                        Margin="2"
+                                        Padding="5,2"
+                                        Click="Delete_Click"/>
+
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+            </DataGrid.Columns>
+        </DataGrid>
+
+    </Grid>
+</UserControl>
