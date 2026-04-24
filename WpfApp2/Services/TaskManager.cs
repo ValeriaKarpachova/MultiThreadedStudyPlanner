@@ -22,6 +22,14 @@ namespace WpfApp2.Services
             task.PropertyChanged += (s, e) =>
             {
                 _db.UpdateTask(task);
+
+                if (!IsEditing &&
+                    (e.PropertyName == nameof(TaskItem.Deadline) ||
+                     e.PropertyName == nameof(TaskItem.EstimatedHours) ||
+                     e.PropertyName == nameof(TaskItem.Progress)))
+                {
+                    CheckOverload();
+                }
             };
         }
 
@@ -43,6 +51,7 @@ namespace WpfApp2.Services
             _db.AddTask(task);
             Subscribe(task);
             Tasks.Add(task);
+
             CheckOverload();
         }
 
@@ -55,12 +64,14 @@ namespace WpfApp2.Services
         public void UpdateTask(TaskItem task)
         {
             _db.UpdateTask(task);
-            CheckOverload();
+
+            if (!IsEditing)
+                CheckOverload();
         }
 
         private void CheckOverload()
         {
-            OverloadService.CheckAndNotify(Tasks.ToList(), false);
+            OverloadService.CheckAndNotify(Tasks.ToList(), IsEditing);
         }
     }
 }

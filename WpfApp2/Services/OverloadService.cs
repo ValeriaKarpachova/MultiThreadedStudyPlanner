@@ -6,29 +6,26 @@ namespace WpfApp2.Services
 {
     public static class OverloadService
     {
-        private const double DAILY_LIMIT = 6;
-
-        private static bool _toastShown;
-
-        public static void CheckAndNotify(List<TaskItem> tasks, bool isEditing = false)
+        private static bool _isShown = false;
+        public static void CheckAndNotify(List<TaskItem> tasks, bool isEditing)
         {
-            if (isEditing)
-                return;
+            double todayHours = PlannerService.GetTodayHours(tasks);
 
-            var result = PlannerService.BuildDayPlan(tasks);
-
-            if (!result.isOverloaded)
-                return;
-
-            var answer = MessageBox.Show(
-                $"Planned: {result.usedHours:F1}h (limit 6)\nRebuild plan?",
-                "Overload warning",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-
-            if (answer == MessageBoxResult.Yes)
+            if (todayHours > PlannerService.DailyLimit)
             {
-                PlannerService.RebuildPlan(tasks);
+                if (!isEditing && !_isShown)
+                {
+                    _isShown = true;
+
+                    MessageBox.Show(
+                        $"Перегрузка дня!\n" +
+                        $"Запланировано: {todayHours:F1} ч.\n" +
+                        $"Допустимо: {PlannerService.DailyLimit} ч.");
+                }
+            }
+            else
+            {
+                _isShown = false;
             }
         }
     }

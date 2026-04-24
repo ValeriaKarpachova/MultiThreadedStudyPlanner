@@ -32,10 +32,10 @@ namespace WpfApp2.Services
                     {
                         await Application.Current.Dispatcher.InvokeAsync(() =>
                         {
-                            foreach (var task in _taskManager.Tasks)
-                                task.Priority = task.Priority;
+                            var tasksCopy = _taskManager.Tasks.ToList(); 
 
-                            PlannerService.CalculatePriorities(_taskManager.Tasks.ToList());
+                            foreach (var task in tasksCopy)
+                            PlannerService.CalculatePriorities(tasksCopy);
                         });
 
                     }

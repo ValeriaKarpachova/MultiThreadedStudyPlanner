@@ -6,37 +6,24 @@ namespace WpfApp2.Services
 {
     public static class PlannerService
     {
-        private const double DAILY_LIMIT = 6;
+        public const double DailyLimit = 6.0;
 
-        public static (List<TaskItem> plan, double usedHours, bool isOverloaded)
-            BuildDayPlan(List<TaskItem> tasks)
+        public static List<TaskItem> GetTodayTasks(List<TaskItem> tasks)
         {
-            double used = 0;
+            var today = DateTime.Today;
 
-            var sorted = tasks
-                .Where(t => !t.IsCompleted)
-                .OrderByDescending(t => t.Priority)
-                .ThenBy(t => t.Deadline)
+            return tasks
+                .Where(t =>
+                    t.Deadline.HasValue &&
+                    t.Deadline.Value.Date == today &&
+                    !t.IsCompleted)
                 .ToList();
-
-            var result = new List<TaskItem>();
-
-            foreach (var task in sorted)
-            {
-                if (used + task.RemainingHours > DAILY_LIMIT)
-                    return (result, used, true);
-
-                result.Add(task);
-                used += task.RemainingHours;
-            }
-
-            return (result, used, false);
         }
 
-        public static bool IsOverloaded(List<TaskItem> tasks)
+        public static double GetTodayHours(List<TaskItem> tasks)
         {
-            var (_, _, isOverloaded) = BuildDayPlan(tasks);
-            return isOverloaded;
+            return GetTodayTasks(tasks)
+                .Sum(t => t.RemainingHours);
         }
 
         public static void CalculatePriorities(List<TaskItem> tasks)
@@ -48,7 +35,15 @@ namespace WpfApp2.Services
                 if (task.Deadline.HasValue)
                 {
                     double daysLeft = (task.Deadline.Value - DateTime.Now).TotalDays;
-                    urgency = 1.0 / (daysLeft + 1.0);
+
+                    if (daysLeft <= 0)
+                    {
+                        urgency = 1.0 + Math.Abs(daysLeft);
+                    }
+                    else
+                    {
+                        urgency = 1.0 / (daysLeft + 1.0);
+                    }
                 }
 
                 double completion = (100.0 - task.Progress) / 100.0;
@@ -58,32 +53,9 @@ namespace WpfApp2.Services
                     (int)(
                         0.3 * urgency +
                         0.2 * importance +
-                        0.5 * completion
-                    ) * 100;
+                        0.5 * completion ) * 100;
             }
         }
-
-        public static void RebuildPlan(List<TaskItem> tasks)
-        {
-            double used = 0;
-
-            var sorted = tasks
-                .Where(t => !t.IsCompleted)
-                .OrderByDescending(t => t.Priority)
-                .ThenBy(t => t.Deadline)
-                .ToList();
-
-            foreach (var task in sorted)
-            {
-                if (used + task.RemainingHours <= DAILY_LIMIT)
-                {
-                    used += task.RemainingHours;
-                }
-                else
-                {
-                    task.Deadline = (task.Deadline ?? DateTime.Now).AddDays(1);
-                }
-            }
-        }
-    }
+    }   
 }
+

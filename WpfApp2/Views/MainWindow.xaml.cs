@@ -12,6 +12,7 @@ namespace WpfApp2.Views
     {
         private readonly TaskManager manager;
         private readonly BackgroundProcessor _backgroundProcessor;
+        private TaskViewMode currentView = TaskViewMode.Home;
 
         public MainWindow()
         {
@@ -41,7 +42,26 @@ namespace WpfApp2.Views
             view.SortDescriptions.Add(
                 new SortDescription(nameof(TaskItem.Priority), ListSortDirection.Descending));
 
-            view.Filter = t => !(t as TaskItem).IsCompleted;
+            var today = DateTime.Today;
+
+            view.Filter = t =>
+            {
+                var task = t as TaskItem;
+
+                return currentView switch
+                {
+                    TaskViewMode.Home => !task.IsCompleted,
+
+                    TaskViewMode.Today =>
+                        task.Deadline.HasValue &&
+                        task.Deadline.Value.Date == today &&
+                        !task.IsCompleted,
+
+                    TaskViewMode.Completed => task.IsCompleted,
+
+                    _ => true
+                };
+            };
 
             view.Refresh();
         }
@@ -62,10 +82,7 @@ namespace WpfApp2.Views
 
         private void Task_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(TaskItem.IsCompleted))
-            {
                 RefreshTasksView();
-            }
         }
 
         private void AddTask_Click(object sender, RoutedEventArgs e)
@@ -93,11 +110,19 @@ namespace WpfApp2.Views
             var task = (sender as Button)?.DataContext as TaskItem;
             if (task == null) return;
 
+            manager.IsEditing = true; 
+
             var window = new EditTaskWindow(task, manager);
 
             if (window.ShowDialog() == true)
             {
+                manager.IsEditing = false; 
+                manager.UpdateTask(task); 
                 RefreshTasksView();
+            }
+            else
+            {
+                manager.IsEditing = false; 
             }
         }
 
@@ -105,12 +130,42 @@ namespace WpfApp2.Views
         {
             if (sender is CheckBox cb && cb.DataContext is TaskItem task)
             {
-                task.Progress = cb.IsChecked == true ? 100 : task.Progress;
+                task.Progress = cb.IsChecked == true ? 100 : 0;
 
                 manager.UpdateTask(task);
 
                 RefreshTasksView();
             }
+        }
+
+        private void Home_Click(object sender, RoutedEventArgs e)
+        {
+            currentView = TaskViewMode.Home;
+            RefreshTasksView();
+        }
+
+        private void Today_Click(object sender, RoutedEventArgs e)
+        {
+            currentView = TaskViewMode.Today;
+            RefreshTasksView();
+        }
+
+        private void Completed_Click(object sender, RoutedEventArgs e)
+        {
+            currentView = TaskViewMode.Completed;
+            RefreshTasksView();
+        }
+
+        private void Calendar_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Тут будет календарь");
+        }
+
+        public enum TaskViewMode
+        {
+            Home,
+            Today,
+            Completed
         }
 
         protected override void OnClosing(CancelEventArgs e)
