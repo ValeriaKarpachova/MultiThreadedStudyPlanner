@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using WpfApp2.Services;
 
 namespace WpfApp2.Views
@@ -20,8 +21,14 @@ namespace WpfApp2.Views
 
             TasksGrid.ItemsSource = manager.Tasks;
 
+            var view = CollectionViewSource.GetDefaultView(TasksGrid.ItemsSource);
+
+            view.SortDescriptions.Add(
+                new SortDescription(nameof(TaskItem.Priority), ListSortDirection.Descending));
+
+            view.Filter = TaskFilter;
+
             Subscribe();
-            Refresh();
         }
 
         private void Subscribe()
@@ -48,33 +55,10 @@ namespace WpfApp2.Views
 
         public void Refresh()
         {
-            var view = System.Windows.Data.CollectionViewSource.GetDefaultView(TasksGrid.ItemsSource);
-
-            view.SortDescriptions.Clear();
-            view.SortDescriptions.Add(
-                new SortDescription(nameof(TaskItem.Priority), ListSortDirection.Descending));
-
-            view.Filter = t =>
+            Dispatcher.Invoke(() =>
             {
-                var task = t as TaskItem;
-                var today = DateTime.Today;
-
-                return viewMode switch
-                {
-                    MainWindow.TaskViewMode.Home => !task.IsCompleted,
-
-                    MainWindow.TaskViewMode.Today =>
-                        task.Deadline.HasValue &&
-                        task.Deadline.Value.Date == today &&
-                        !task.IsCompleted,
-
-                    MainWindow.TaskViewMode.Completed => task.IsCompleted,
-
-                    _ => true
-                };
-            };
-
-            view.Refresh();
+                CollectionViewSource.GetDefaultView(TasksGrid.ItemsSource)?.Refresh();
+            });
         }
 
         private void Delete_Click(object sender, RoutedEventArgs e)
@@ -95,9 +79,30 @@ namespace WpfApp2.Views
 
             if (window.ShowDialog() == true)
             {
-                manager.UpdateTask(task);
                 Refresh();
             }
+        }
+
+        private bool TaskFilter(object t)
+        {
+            var task = t as TaskItem;
+            if (task == null) return false;
+
+            var today = DateTime.Today;
+
+            return viewMode switch
+            {
+                MainWindow.TaskViewMode.Home => !task.IsCompleted,
+
+                MainWindow.TaskViewMode.Today =>
+                    task.Deadline.HasValue &&
+                    task.Deadline.Value.Date == today &&
+                    !task.IsCompleted,
+
+                MainWindow.TaskViewMode.Completed => task.IsCompleted,
+
+                _ => true
+            };
         }
     }
 }

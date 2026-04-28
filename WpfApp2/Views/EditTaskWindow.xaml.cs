@@ -11,19 +11,30 @@ namespace WpfApp2
         public TaskItem Task { get; private set; }
         private readonly TaskManager _taskManager;
 
+
         public EditTaskWindow(TaskItem task, TaskManager taskManager)
         {
             InitializeComponent();
 
             Task = task;
             _taskManager = taskManager;
-            taskManager.IsEditing = true;
+
+            _taskManager.IsEditing = true;
 
             NameBox.Text = Task.Name;
             Description.Text = Task.Description;
             ProgressBox.Text = Task.Progress.ToString();
             EstimatedBox.Text = Task.EstimatedHours.ToString();
             DeadlinePicker.SelectedDate = Task.Deadline;
+
+            foreach (ComboBoxItem item in TypeBox.Items)
+            {
+                if ((string)item.Content == Task.TaskType)
+                {
+                    TypeBox.SelectedItem = item;
+                    break;
+                }
+            }
         }
 
         private void Edit_Click(object sender, RoutedEventArgs e)
@@ -47,12 +58,16 @@ namespace WpfApp2
             Task.EstimatedHours = hours;
 
             var selectedType = (TypeBox.SelectedItem as ComboBoxItem)?.Content?.ToString();
-            Task.TaskType = selectedType == "Без типу" ? null : selectedType;
 
-            PlannerService.CalculatePriorities(_taskManager.Tasks.ToList());
+            Task.TaskType = selectedType == "Без типу" || string.IsNullOrWhiteSpace(selectedType)
+                ? null
+                : selectedType;
+
+            _taskManager.IsEditing = true;
+
+            _taskManager.UpdateTask(Task);
 
             _taskManager.IsEditing = false;
-            _taskManager.UpdateTask(Task);
 
             DialogResult = true;
         }

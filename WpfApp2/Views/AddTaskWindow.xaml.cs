@@ -39,18 +39,17 @@ namespace WpfApp2
             }
 
             NewTask.Name = NameBox.Text;
+            NewTask.Description = Description.Text;
             NewTask.Progress = progress;
             NewTask.Deadline = DeadlinePicker.SelectedDate;
-
-            var selectedType = (TypeBox.SelectedItem as ComboBoxItem)?.Content?.ToString();
-            NewTask.TaskType = selectedType == "Без типу" ? null : selectedType;
-
             NewTask.EstimatedHours = hours;
 
-            PlannerService.CalculatePriorities(new List<TaskItem> { NewTask });
+            var selectedType = (TypeBox.SelectedItem as ComboBoxItem)?.Content?.ToString()
+                              ?? "Без типу";
+
+            NewTask.TaskType = selectedType;
 
             DialogResult = true;
-
         }
     }
 }

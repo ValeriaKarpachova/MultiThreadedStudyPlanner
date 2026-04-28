@@ -3,20 +3,17 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using WpfApp2.Services;
 
 namespace WpfApp2.Services
 {
     public class BackgroundProcessor
     {
-        private readonly TaskManager _taskManager;
+        private readonly TaskManager _manager;
         private CancellationTokenSource _cts;
-        private readonly TimeSpan _interval;
 
-        public BackgroundProcessor(TaskManager taskManager, TimeSpan? interval = null)
+        public BackgroundProcessor(TaskManager manager)
         {
-            _taskManager = taskManager;
-            _interval = interval ?? TimeSpan.FromMinutes(1);
+            _manager = manager;
         }
 
         public void Start()
@@ -30,22 +27,22 @@ namespace WpfApp2.Services
                 {
                     try
                     {
-                        var tasksCopy = _taskManager.Tasks.ToList();
-
-                        PlannerService.CalculatePriorities(tasksCopy);
-
                         await Application.Current.Dispatcher.InvokeAsync(() =>
                         {
-                            _taskManager.ApplyUpdatedPriorities(tasksCopy);
+                            _manager.Recalculate();
                         });
                     }
+                    catch (OperationCanceledException) { break; } // ← нормальное завершение
                     catch (Exception ex)
                     {
-                        await Application.Current.Dispatcher.InvokeAsync(() =>
-                            MessageBox.Show("Background error: " + ex.Message));
+                        System.Diagnostics.Debug.WriteLine($"BackgroundProcessor error: {ex.Message}");
                     }
 
-                    await Task.Delay(_interval, token);
+                    try
+                    {
+                        await Task.Delay(TimeSpan.FromMinutes(1), token);
+                    }
+                    catch (OperationCanceledException) { break; }
                 }
             }, token);
         }

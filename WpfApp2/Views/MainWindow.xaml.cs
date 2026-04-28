@@ -24,7 +24,7 @@ namespace WpfApp2.Views
             manager = new TaskManager(db);
             manager.Load();
 
-            _backgroundProcessor = new BackgroundProcessor(manager, TimeSpan.FromSeconds(30));
+            _backgroundProcessor = new BackgroundProcessor(manager);
             _backgroundProcessor.Start();
         }
 
