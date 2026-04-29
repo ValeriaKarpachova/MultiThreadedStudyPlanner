@@ -50,19 +50,9 @@ namespace WpfApp2.Services
             }
         }
 
-        public static List<TaskItem> SplitTask(TaskItem task)
+        public static List<TaskItem> SplitTask(TaskItem task, int parts, List<string> subTaskNames)
         {
             var today = DateTime.Today;
-            var deadline = task.Deadline!.Value.Date;
-            int daysAvailable = (int)(deadline - today).TotalDays + 1; // включая день дедлайна
-
-            if (daysAvailable <= 1)
-                return new List<TaskItem>(); // нет смысла разбивать — до дедлайна 0-1 день
-
-            // Сколько частей нужно (каждая часть <= DailyLimit часов)
-            int parts = (int)Math.Ceiling(task.EstimatedHours / DailyLimit);
-            parts = Math.Min(parts, daysAvailable); // не больше чем дней до дедлайна
-
             double hoursPerPart = Math.Round(task.EstimatedHours / parts, 1);
             var result = new List<TaskItem>();
 
@@ -70,15 +60,16 @@ namespace WpfApp2.Services
             {
                 result.Add(new TaskItem
                 {
-                    Name = $"{task.Name} (часть {i + 1}/{parts})",
-                    Description = task.Description,
+                    Name = subTaskNames[i],
+                    Description = "",
                     TaskType = task.TaskType,
                     Priority = task.Priority,
+                    ParentId = task.Id,
                     Deadline = today.AddDays(i),
                     EstimatedHours = i == parts - 1
-                        ? Math.Round(task.EstimatedHours - hoursPerPart * (parts - 1), 1) // остаток
+                        ? Math.Round(task.EstimatedHours - hoursPerPart * (parts - 1), 1)
                         : hoursPerPart,
-                    Progress = 0
+                    IsChecked = false
                 });
             }
 

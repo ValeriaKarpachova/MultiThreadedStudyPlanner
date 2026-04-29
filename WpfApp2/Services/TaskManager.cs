@@ -20,15 +20,13 @@ namespace WpfApp2.Services
         public void Load()
         {
             var tasks = _db.LoadTasks();
-
             Tasks.Clear();
-
             foreach (var t in tasks)
             {
                 Subscribe(t);
+                SubscribeToSubTasks(t); // Добавить эту строку
                 Tasks.Add(t);
             }
-
             Recalculate();
         }
 
@@ -79,13 +77,17 @@ namespace WpfApp2.Services
         {
             double hours = PlannerService.GetTodayHours(Tasks.ToList());
 
-            // Временно — убедимся что метод вызывается и hours считается правильно
             System.Diagnostics.Debug.WriteLine($"CheckOverload: hours={hours}, limit={PlannerService.DailyLimit}");
 
             if (hours > PlannerService.DailyLimit)
             {
                 System.Diagnostics.Debug.WriteLine("Showing OverloadDialog...");
-                var dialog = new Views.OverloadDialog(Tasks.ToList(), hours, this);
+
+                var dialog = new Views.OverloadDialog(Tasks.ToList(), hours, this)
+                {
+                    Owner = Application.Current.MainWindow // ← диалог поверх главного окна
+                };
+
                 var result = dialog.ShowDialog();
                 System.Diagnostics.Debug.WriteLine($"Dialog closed, result={result}");
             }
@@ -111,6 +113,59 @@ namespace WpfApp2.Services
                 var existing = Tasks.FirstOrDefault(x => x.Id == u.Id);
                 if (existing != null)
                     existing.Priority = u.Priority;
+            }
+        }
+
+        public void AddSubTask(TaskItem parent, TaskItem sub)
+        {
+            sub.ParentId = parent.Id;
+            _db.AddTask(sub);
+
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                parent.SubTasks.Add(sub);
+                Subscribe(sub);
+
+                // При отметке части обновляем прогресс родителя И сохраняем в БД
+                sub.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(TaskItem.IsChecked))
+                    {
+                        // Обновляем родителя
+                        parent.RefreshParent();
+
+                        // Сохраняем изменения дочерней задачи
+                        if (!IsEditing)
+                            Task.Run(() =>
+                            {
+                                try
+                                {
+                                    _db.UpdateTask(sub);
+                                    _db.UpdateTask(parent);
+                                }
+                                catch (Exception ex)
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"Subscribe UpdateTask error: {ex.Message}");
+                                }
+                            });
+                    }
+                };
+            });
+        }
+
+        public void SubscribeToSubTasks(TaskItem parent)
+        {
+            foreach (var sub in parent.SubTasks)
+            {
+                sub.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(TaskItem.IsChecked))
+                    {
+                        parent.RefreshParent();
+                        if (!IsEditing)
+                            Task.Run(() => _db.UpdateTask(parent));
+                    }
+                };
             }
         }
 

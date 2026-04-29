@@ -10,50 +10,39 @@ namespace WpfApp2.Views
     {
         private readonly List<TaskItem> _tasks;
         private readonly TaskManager _taskManager;
-        private TaskItem _taskToSplit;
 
         public OverloadDialog(List<TaskItem> tasks, double hours, TaskManager taskManager)
         {
             InitializeComponent();
-
             _tasks = tasks;
             _taskManager = taskManager;
 
-            HoursText.Text = $"Запланировано {hours:F1} ч. при лімите {PlannerService.DailyLimit} ч.";
+            HoursText.Text = $"Заплановано {hours:F1} ч. при ліміті {PlannerService.DailyLimit} ч.";
 
-            // Карточка "Перенести"
+            // Картка "Перенести"
             var toMove = GetTasksToMove();
             MoveText.Text = toMove.Any()
-                ? "На завтра перейдут:\n" + string.Join("\n", toMove.Select(t => $"• {t.Name}"))
-                : "Нечего переносить.";
+                ? "На завтра перейдуть:\n" + string.Join("\n", toMove.Select(t => $"• {t.Name}"))
+                : "Нічого переносити.";
 
-            // Карточка "Разбить" — ищем задание дольше 6 часов с дедлайном > сегодня
-            _taskToSplit = _tasks.FirstOrDefault(t =>
-                t.Deadline.HasValue &&
-                t.Deadline.Value.Date >= DateTime.Today &&
-                !t.IsCompleted &&
-                t.EstimatedHours > PlannerService.DailyLimit &&
-                (t.Deadline.Value.Date - DateTime.Today).TotalDays >= 1);
+            // Заповнюємо ComboBox — всі незавершені задачі з дедлайном
+            var splittable = _tasks
+                .Where(t => !t.IsCompleted && !t.IsSplit && t.EstimatedHours > 0)
+                .OrderByDescending(t => t.EstimatedHours)
+                .ToList();
 
-            if (_taskToSplit != null)
-            {
-                int parts = (int)Math.Ceiling(_taskToSplit.EstimatedHours / PlannerService.DailyLimit);
-                int daysAvailable = (int)(_taskToSplit.Deadline!.Value.Date - DateTime.Today).TotalDays + 1;
-                parts = Math.Min(parts, daysAvailable);
-
-                SplitCard.Visibility = Visibility.Visible;
-                SplitColumn.Width = new System.Windows.GridLength(1, System.Windows.GridUnitType.Star);
-                SplitText.Text = $"«{_taskToSplit.Name}» ({_taskToSplit.EstimatedHours} ч.) " +
-                                 $"будет разбито на {parts} части по ~" +
-                                 $"{Math.Round(_taskToSplit.EstimatedHours / parts, 1)} ч./день до дедлайна.";
-            }
+            SplitTaskCombo.ItemsSource = splittable;
+            if (splittable.Any())
+                SplitTaskCombo.SelectedIndex = 0;
         }
 
         private List<TaskItem> GetTasksToMove()
         {
             var today = DateTime.Today;
             var todayTasks = _tasks
-                .Where(t => t.Deadline.HasValue && t.Deadline.Value.Date == today && !t.IsCompleted)
+                .Where(t => t.Deadline.HasValue &&
+                            t.Deadline.Value.Date == today &&
+                            !t.IsCompleted)
                 .OrderBy(t => t.Priority)
                 .ToList();
 
@@ -66,7 +55,6 @@ namespace WpfApp2.Views
                 totalHours -= task.RemainingHours;
                 toMove.Add(task);
             }
-
             return toMove;
         }
 
@@ -75,34 +63,30 @@ namespace WpfApp2.Views
             var tomorrow = DateTime.Today.AddDays(1);
             foreach (var task in GetTasksToMove())
                 task.Deadline = tomorrow;
-
             DialogResult = true;
         }
 
         private void Split_Click(object sender, RoutedEventArgs e)
         {
-            if (_taskToSplit == null) return;
-
-            var parts = PlannerService.SplitTask(_taskToSplit);
-            if (!parts.Any())
+            var selected = SplitTaskCombo.SelectedItem as TaskItem;
+            if (selected == null)
             {
-                MessageBox.Show("Недостаточно дней до дедлайна для разбивки.");
+                MessageBox.Show("Оберіть завдання для розбиття");
                 return;
             }
 
-            // Удаляем оригинальное задание
-            _taskManager.DeleteTask(_taskToSplit);
+            var dialog = new SplitTaskDialog(selected, _taskManager)
+            {
+                Owner = this
+            };
 
-            // Добавляем части (без повторного показа диалога)
-            foreach (var part in parts)
-                _taskManager.AddTaskSilent(part);
-
-            DialogResult = true;
+            if (dialog.ShowDialog() == true)
+                DialogResult = true;
         }
 
         private void Ignore_Click(object sender, RoutedEventArgs e)
         {
-            DialogResult = false;
+            Close();
         }
     }
 }

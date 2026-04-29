@@ -21,53 +21,53 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition x:Name="SplitColumn" Width="0"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
             <!-- Перенести -->
-            <Border Grid.Column="0"
-                    BorderBrush="Gray" BorderThickness="1"
-                    CornerRadius="6" Margin="0,0,8,0" Padding="12">
+            <Border Grid.Column="0" BorderBrush="Gray"
+            BorderThickness="1" CornerRadius="6"
+            Margin="0,0,8,0" Padding="12">
                 <StackPanel>
-                    <TextBlock Text="Перенести задания"
-                               FontWeight="Bold" Margin="0,0,0,6"/>
-                    <TextBlock x:Name="MoveText"
-                               TextWrapping="Wrap" FontSize="12"
-                               Foreground="Gray" Margin="0,0,0,12"/>
+                    <TextBlock Text="Перенести завдання"
+                       FontWeight="Bold" Margin="0,0,0,6"/>
+                    <TextBlock x:Name="MoveText" TextWrapping="Wrap"
+                       FontSize="12" Foreground="Gray"><Run Text="Завдання з найнижч"/><Run Text="ім пріорітетом буде перенесено на завтра"/><Run Text="."/><LineBreak/></TextBlock>
                     <Button Content="Перенести" Click="Move_Click"/>
                 </StackPanel>
             </Border>
 
-            <!-- Игнорировать -->
-            <Border Grid.Column="1"
-                    BorderBrush="Gray" BorderThickness="1"
-                    CornerRadius="6" Margin="8,0,0,0" Padding="12">
+            <!-- Розбити завдання (завжди видима, з вибором) -->
+            <Border Grid.Column="1" BorderBrush="Gray"
+            BorderThickness="1" CornerRadius="6"
+            Margin="8,0" Padding="12">
                 <StackPanel>
-                    <TextBlock Text="Игнорировать"
-                               FontWeight="Bold" Margin="0,0,0,6"/>
+                    <TextBlock Text="Розбити завдання"
+                       FontWeight="Bold" Margin="0,0,0,6"/>
+                    <TextBlock Text="Виберіть завдання для розбиття на частини:"
+                       TextWrapping="Wrap" FontSize="12"
+                       Foreground="Gray" Margin="0,0,0,6"/>
+                    <ComboBox x:Name="SplitTaskCombo"
+                      Margin="0,0,0,10"
+                      DisplayMemberPath="Name"
+                      FontSize="12"/>
+                    <Button Content="Розбити" Click="Split_Click"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Ігнорувати -->
+            <Border Grid.Column="2" BorderBrush="Gray"
+            BorderThickness="1" CornerRadius="6"
+            Margin="8,0,0,0" Padding="12">
+                <StackPanel>
+                    <TextBlock Text="Ігнорувати"
+                       FontWeight="Bold" Margin="0,0,0,6"/>
                     <TextBlock TextWrapping="Wrap" FontSize="12"
-                               Foreground="Gray" Margin="0,0,0,12"
-                               Text="Оставить всё как есть. Можно перенести задания вручную позже."/>
-                    <Button Content="Игнорировать" Click="Ignore_Click"/>
+                       Foreground="Gray" Margin="0,0,0,12"
+                       Text="Залишити все як є. Завдання можна перенести вручну."/>
+                    <Button Content="Ігнорувати" Click="Ignore_Click"/>
                 </StackPanel>
             </Border>
-
-            <!-- Разбить задание (видна только если есть задание > 6ч) -->
-            <Border x:Name="SplitCard"
-                    Grid.Column="2"
-                    BorderBrush="Gray" BorderThickness="1"
-                    CornerRadius="6" Margin="8,0,0,0" Padding="12"
-                    Visibility="Collapsed">
-                <StackPanel>
-                    <TextBlock Text="Разбить задание"
-                               FontWeight="Bold" Margin="0,0,0,6"/>
-                    <TextBlock x:Name="SplitText"
-                               TextWrapping="Wrap" FontSize="12"
-                               Foreground="Gray" Margin="0,0,0,12"/>
-                    <Button Content="Разбить" Click="Split_Click"/>
-                </StackPanel>
-            </Border>
-
         </Grid>
     </StackPanel>
 </Window>

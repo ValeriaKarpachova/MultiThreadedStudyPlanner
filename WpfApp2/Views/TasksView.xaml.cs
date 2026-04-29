@@ -1,9 +1,9 @@
-﻿using System;
-using System.ComponentModel;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
+using System.Windows.Media;
 using WpfApp2.Services;
+using System.Windows.Controls.Primitives;
+using System.Windows.Media;
 
 namespace WpfApp2.Views
 {
@@ -15,59 +15,56 @@ namespace WpfApp2.Views
         public TasksView(TaskManager manager, MainWindow.TaskViewMode mode)
         {
             InitializeComponent();
-
             this.manager = manager;
             this.viewMode = mode;
 
-            TasksGrid.ItemsSource = manager.Tasks;
+            RefreshTree();
 
-            var view = CollectionViewSource.GetDefaultView(TasksGrid.ItemsSource);
+            manager.Tasks.CollectionChanged += (s, e) => RefreshTree();
 
-            view.SortDescriptions.Add(
-                new SortDescription(nameof(TaskItem.Priority), ListSortDirection.Descending));
-
-            view.Filter = TaskFilter;
-
-            Subscribe();
-        }
-
-        private void Subscribe()
-        {
             foreach (var task in manager.Tasks)
-                task.PropertyChanged += Task_PropertyChanged;
-
-            manager.Tasks.CollectionChanged += (s, e) =>
             {
-                if (e.NewItems == null) return;
-
-                foreach (TaskItem t in e.NewItems)
-                    t.PropertyChanged += Task_PropertyChanged;
-            };
-        }
-
-        private void Task_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(TaskItem.Priority))
-            {
-                Refresh();
+                SubscribeToTask(task);
             }
         }
 
-        public void Refresh()
+        private void SubscribeToTask(TaskItem task)
         {
-            Dispatcher.Invoke(() =>
+            task.PropertyChanged += (s, e) =>
             {
-                CollectionViewSource.GetDefaultView(TasksGrid.ItemsSource)?.Refresh();
-            });
+                if (e.PropertyName == nameof(TaskItem.IsChecked) ||
+                    e.PropertyName == nameof(TaskItem.Progress))
+                {
+                    RefreshTree(); // Обновляем отображение при изменении статуса
+                }
+            };
+            
+            foreach (var sub in task.SubTasks)
+            {
+                sub.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(TaskItem.IsChecked))
+                    {
+                        task.RefreshParent(); // Обновляем родителя
+                        RefreshTree();
+                    }
+                };
+            }
         }
 
-        private void Delete_Click(object sender, RoutedEventArgs e)
+        private void RefreshTree()
         {
-            var task = (sender as Button)?.DataContext as TaskItem;
-            if (task == null) return;
+            var today = System.DateTime.Today;
 
-            manager.DeleteTask(task);
-            Refresh();
+            var filtered = manager.Tasks.Where(t => viewMode switch
+            {
+                MainWindow.TaskViewMode.Today =>
+                    t.Deadline.HasValue && t.Deadline.Value.Date == today && !t.IsCompleted,
+                MainWindow.TaskViewMode.Completed => t.IsCompleted,
+                _ => !t.IsCompleted
+            }).OrderByDescending(t => t.Priority).ToList();
+
+            TasksGrid.ItemsSource = filtered;
         }
 
         private void Edit_Click(object sender, RoutedEventArgs e)
@@ -76,33 +73,82 @@ namespace WpfApp2.Views
             if (task == null) return;
 
             var window = new EditTaskWindow(task, manager);
-
             if (window.ShowDialog() == true)
+                RefreshTree();
+        }
+
+        private void Delete_Click(object sender, RoutedEventArgs e)
+        {
+            var task = (sender as Button)?.DataContext as TaskItem;
+            if (task == null) return;
+
+            manager.DeleteTask(task);
+            RefreshTree();
+        }
+
+        private void Split_Click(object sender, RoutedEventArgs e)
+        {
+            var task = (sender as Button)?.DataContext as TaskItem;
+            if (task == null) return;
+
+            var dialog = new SplitTaskDialog(task, manager)
             {
-                Refresh();
+                Owner = Window.GetWindow(this)
+            };
+            if (dialog.ShowDialog() == true)
+                RefreshTree();
+        }
+
+        private void ExpanderToggle_Checked(object sender, RoutedEventArgs e)
+        {
+            var toggle = sender as ToggleButton;
+            var task = toggle?.Tag as TaskItem;
+            if (task == null || !task.IsSplit) return;
+
+            var row = FindParentDataGridRow(toggle);
+            if (row != null)
+            {
+                row.DetailsVisibility = Visibility.Visible;
             }
         }
 
-        private bool TaskFilter(object t)
+        private void ExpanderToggle_Unchecked(object sender, RoutedEventArgs e)
         {
-            var task = t as TaskItem;
-            if (task == null) return false;
+            var toggle = sender as ToggleButton;
+            var task = toggle?.Tag as TaskItem;
+            if (task == null || !task.IsSplit) return;
 
-            var today = DateTime.Today;
-
-            return viewMode switch
+            var row = FindParentDataGridRow(toggle);
+            if (row != null)
             {
-                MainWindow.TaskViewMode.Home => !task.IsCompleted,
+                row.DetailsVisibility = Visibility.Collapsed;
+            }
+        }
 
-                MainWindow.TaskViewMode.Today =>
-                    task.Deadline.HasValue &&
-                    task.Deadline.Value.Date == today &&
-                    !task.IsCompleted,
+        private DataGridRow FindParentDataGridRow(DependencyObject child)
+        {
+            var parent = VisualTreeHelper.GetParent(child);
+            while (parent != null)
+            {
+                if (parent is DataGridRow row) return row;
+                parent = VisualTreeHelper.GetParent(parent);
+            }
+            return null;
+        }
 
-                MainWindow.TaskViewMode.Completed => task.IsCompleted,
+        private void ToggleExpander_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            var task = button?.Tag as TaskItem;
+            if (task == null || !task.IsSplit) return;
 
-                _ => true
-            };
+            var row = FindParentDataGridRow(button);
+            if (row != null)
+            {
+                row.DetailsVisibility = row.DetailsVisibility == Visibility.Visible
+                    ? Visibility.Collapsed
+                    : Visibility.Visible;
+            }
         }
     }
 }

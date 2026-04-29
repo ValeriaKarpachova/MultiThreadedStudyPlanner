@@ -11,16 +11,15 @@
                 <materialDesign:BundledTheme BaseTheme="Light"
                                              PrimaryColor="DeepPurple"
                                              SecondaryColor="Lime" />
-
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign2.Defaults.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
             <Style x:Key="FlatButton" TargetType="Button">
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="BorderThickness" Value="0"/>
                 <Setter Property="HorizontalContentAlignment" Value="Left"/>
                 <Setter Property="Padding" Value="5"/>
                 <Setter Property="Cursor" Value="Hand"/>
-
                 <Style.Triggers>
                     <Trigger Property="IsMouseOver" Value="True">
                         <Setter Property="Background" Value="#22000000"/>
@@ -28,8 +27,77 @@
                 </Style.Triggers>
             </Style>
 
+            <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
+            <local:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility"/>
+
+            <Style x:Key="TreeArrowExpander" TargetType="Expander">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Expander">
+                            <ToggleButton IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
+                              Background="Transparent"
+                              BorderThickness="0"
+                              Padding="8,4"
+                              Cursor="Hand"
+                              HorizontalAlignment="Stretch">
+                                <ToggleButton.Style>
+                                    <Style TargetType="ToggleButton">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="ToggleButton">
+                                                    <Grid Background="Transparent"
+                                              HorizontalAlignment="Stretch">
+                                                        <Path x:Name="Arrow"
+                                                  Data="M 0 0 L 6 4 L 0 8 Z"
+                                                  Fill="#666"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  RenderTransformOrigin="0.5,0.5"
+                                                  Margin="0,0,0,0">
+                                                            <Path.RenderTransform>
+                                                                <RotateTransform Angle="0"/>
+                                                            </Path.RenderTransform>
+                                                        </Path>
+                                                    </Grid>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="Arrow" Property="Fill" Value="#333"/>
+                                                        </Trigger>
+                                                        <Trigger Property="IsChecked" Value="True">
+                                                            <Trigger.EnterActions>
+                                                                <BeginStoryboard>
+                                                                    <Storyboard>
+                                                                        <DoubleAnimation
+                                                                Storyboard.TargetName="Arrow"
+                                                                Storyboard.TargetProperty="(Path.RenderTransform).(RotateTransform.Angle)"
+                                                                To="90" Duration="0:0:0.15"/>
+                                                                    </Storyboard>
+                                                                </BeginStoryboard>
+                                                            </Trigger.EnterActions>
+                                                            <Trigger.ExitActions>
+                                                                <BeginStoryboard>
+                                                                    <Storyboard>
+                                                                        <DoubleAnimation
+                                                                Storyboard.TargetName="Arrow"
+                                                                Storyboard.TargetProperty="(Path.RenderTransform).(RotateTransform.Angle)"
+                                                                To="0" Duration="0:0:0.15"/>
+                                                                    </Storyboard>
+                                                                </BeginStoryboard>
+                                                            </Trigger.ExitActions>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </ToggleButton.Style>
+                            </ToggleButton>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
         </ResourceDictionary>
     </Application.Resources>
 
 </Application>
-  

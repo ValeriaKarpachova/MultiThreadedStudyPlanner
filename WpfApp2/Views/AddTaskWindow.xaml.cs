@@ -18,7 +18,7 @@ namespace WpfApp2
             if (task != null)
             {
                 NameBox.Text = task.Name;
-                ProgressBox.Text = task.Progress.ToString();
+                // Progress убран — он вычисляемый
                 DeadlinePicker.SelectedDate = task.Deadline;
                 EstimatedBox.Text = task.EstimatedHours.ToString();
             }
@@ -28,9 +28,7 @@ namespace WpfApp2
         {
             if (!Validator.ValidateTask(
                     NameBox.Text,
-                    ProgressBox.Text,
                     EstimatedBox.Text,
-                    out int progress,
                     out double hours,
                     out string error))
             {
@@ -40,7 +38,6 @@ namespace WpfApp2
 
             NewTask.Name = NameBox.Text;
             NewTask.Description = Description.Text;
-            NewTask.Progress = progress;
             NewTask.Deadline = DeadlinePicker.SelectedDate;
             NewTask.EstimatedHours = hours;
 

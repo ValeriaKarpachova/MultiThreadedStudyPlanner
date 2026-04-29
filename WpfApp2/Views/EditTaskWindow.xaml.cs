@@ -11,7 +11,6 @@ namespace WpfApp2
         public TaskItem Task { get; private set; }
         private readonly TaskManager _taskManager;
 
-
         public EditTaskWindow(TaskItem task, TaskManager taskManager)
         {
             InitializeComponent();
@@ -23,7 +22,6 @@ namespace WpfApp2
 
             NameBox.Text = Task.Name;
             Description.Text = Task.Description;
-            ProgressBox.Text = Task.Progress.ToString();
             EstimatedBox.Text = Task.EstimatedHours.ToString();
             DeadlinePicker.SelectedDate = Task.Deadline;
 
@@ -41,9 +39,7 @@ namespace WpfApp2
         {
             if (!Validator.ValidateTask(
                     NameBox.Text,
-                    ProgressBox.Text,
                     EstimatedBox.Text,
-                    out int progress,
                     out double hours,
                     out string error))
             {
@@ -53,7 +49,6 @@ namespace WpfApp2
 
             Task.Name = NameBox.Text;
             Task.Description = Description.Text;
-            Task.Progress = progress;
             Task.Deadline = DeadlinePicker.SelectedDate;
             Task.EstimatedHours = hours;
 
@@ -64,9 +59,7 @@ namespace WpfApp2
                 : selectedType;
 
             _taskManager.IsEditing = true;
-
             _taskManager.UpdateTask(Task);
-
             _taskManager.IsEditing = false;
 
             DialogResult = true;

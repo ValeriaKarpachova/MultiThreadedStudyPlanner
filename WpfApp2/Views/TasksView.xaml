@@ -2,66 +2,208 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <Grid>
+    <DataGrid x:Name="TasksGrid"
+              AutoGenerateColumns="False"
+              CanUserAddRows="False"
+              CanUserResizeRows="False"
+              SelectionMode="Single"
+              Margin="5"
+              HorizontalScrollBarVisibility="Disabled"
+              RowDetailsVisibilityMode="Collapsed">
 
-        <DataGrid x:Name="TasksGrid"
-                  AutoGenerateColumns="False"
-                  CanUserAddRows="False"
-                  SelectionMode="Single"
-                  Margin="5"
-                  HorizontalScrollBarVisibility="Disabled"
-                  ColumnWidth="*">
+        <DataGrid.Columns>
 
-            <DataGrid.Columns>
+            <!-- Стрелка для разбитых -->
+            <DataGridTemplateColumn Width="60">
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                        <ToggleButton x:Name="ExpanderToggle"
+                          Background="Transparent"
+                          BorderThickness="0"
+                          Cursor="Hand"
+                          Padding="8,4"
+                          HorizontalAlignment="Stretch"
+                          Visibility="{Binding IsSplit, Converter={StaticResource BoolToVisibility}}"
+                          Checked="ExpanderToggle_Checked"
+                          Unchecked="ExpanderToggle_Unchecked"
+                          Tag="{Binding}">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Grid Background="Transparent">
+                                        <Path x:Name="Arrow"
+                                  Data="M 0 0 L 6 4 L 0 8 Z"
+                                  Fill="#666"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"
+                                  RenderTransformOrigin="0.5,0.5">
+                                            <Path.RenderTransform>
+                                                <RotateTransform Angle="0"/>
+                                            </Path.RenderTransform>
+                                        </Path>
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Grid>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Arrow" Property="Fill" Value="#333"/>
+                                        </Trigger>
+                                        <Trigger Property="IsChecked" Value="True">
+                                            <Trigger.EnterActions>
+                                                <BeginStoryboard>
+                                                    <Storyboard>
+                                                        <DoubleAnimation
+                                                Storyboard.TargetName="Arrow"
+                                                Storyboard.TargetProperty="(Path.RenderTransform).(RotateTransform.Angle)"
+                                                To="90" Duration="0:0:0.15"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </Trigger.EnterActions>
+                                            <Trigger.ExitActions>
+                                                <BeginStoryboard>
+                                                    <Storyboard>
+                                                        <DoubleAnimation
+                                                Storyboard.TargetName="Arrow"
+                                                Storyboard.TargetProperty="(Path.RenderTransform).(RotateTransform.Angle)"
+                                                To="0" Duration="0:0:0.15"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </Trigger.ExitActions>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>
 
-                <!-- Task Name -->
-                <DataGridTextColumn Header="Task"
-                                    Binding="{Binding Name}"
-                                    Width="2*"/>
+            <!-- Название -->
+            <DataGridTemplateColumn Header="Назва" Width="2*">
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis"
+                                   Margin="4,0"/>
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>
 
-                <!-- Description -->
-                <DataGridTextColumn Header="Description"
-                                    Binding="{Binding Description}"
-                                    Width="3*"/>
+            <!-- Тип -->
+            <DataGridTextColumn Header="Тип"
+                                Binding="{Binding TaskType}"
+                                Width="1*"/>
 
-                <!-- Progress -->
-                <DataGridTemplateColumn Header="Progress" Width="1.5*">
-                    <DataGridTemplateColumn.CellTemplate>
+            <!-- Години -->
+            <DataGridTextColumn Header="Години"
+                                Binding="{Binding EstimatedHours, StringFormat={}{0} ч.}"
+                                Width="0.7*"/>
+
+            <!-- Дедлайн -->
+            <DataGridTextColumn Header="Дедлайн"
+                                Binding="{Binding Deadline, StringFormat={}{0:dd.MM.yyyy}}"
+                                Width="1*"/>
+
+            <!-- Прогресс / Чекбокс -->
+            <DataGridTemplateColumn Header="Прогрес" Width="1.5*">
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                        <StackPanel VerticalAlignment="Center" Margin="4,0">
+                            <!-- Прогресс для разбитых -->
+                            <ProgressBar Value="{Binding Progress, Mode=OneWay}"
+                                         Height="8"
+                                         Visibility="{Binding IsSplit, Converter={StaticResource BoolToVisibility}}"/>
+                            <TextBlock Text="{Binding Progress, StringFormat={}{0}%, Mode=OneWay}"
+                                       FontSize="11" Foreground="Gray"
+                                       Visibility="{Binding IsSplit, Converter={StaticResource BoolToVisibility}}"/>
+                            <!-- Чекбокс для обычных -->
+                            <CheckBox IsChecked="{Binding IsChecked, UpdateSourceTrigger=PropertyChanged}"
+                                      Visibility="{Binding IsSplit, Converter={StaticResource InverseBoolToVisibility}}"
+                                      VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>
+
+            <!-- Действия -->
+            <DataGridTemplateColumn Header="Дії" Width="1.2*">
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Edit" Margin="2" Padding="5,2"
+                                    Click="Edit_Click"/>
+                            <Button Content="Delete" Margin="2" Padding="5,2"
+                                    Click="Delete_Click"/>
+                            <Button Content="Розбити" Margin="2" Padding="5,2"
+                                    Click="Split_Click"
+                                    Visibility="{Binding IsSplit, Converter={StaticResource InverseBoolToVisibility}}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>
+
+        </DataGrid.Columns>
+
+        <!-- Части разбитого задания -->
+        <DataGrid.RowDetailsTemplate>
+            <DataTemplate>
+                <ItemsControl ItemsSource="{Binding SubTasks}"
+                              Margin="37,2,0,6">
+                    <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <ProgressBar Value="{Binding Progress}"
-                                         Height="15"/>
+                            <Grid Margin="0,3">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="60"/>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="1*"/>
+                                    <ColumnDefinition Width="0.7*"/>
+                                    <ColumnDefinition Width="1*"/>
+                                    <ColumnDefinition Width="1.5*"/>
+                                    <ColumnDefinition Width="1.2*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Вертикальная линия дерева -->
+                                <Border Grid.Column="0"
+                                        BorderBrush="#CCCCCC"
+                                        BorderThickness="0,0,1,0"
+                                        Margin="44,0,0,0"/>
+
+                                <!-- Горизонтальная линия + чекбокс вместе -->
+                                <StackPanel Grid.Column="0"
+                                            Orientation="Horizontal"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center">
+                                    <Border Width="12"
+                                            BorderBrush="#CCCCCC"
+                                            BorderThickness="0,1,0,0"
+                                            VerticalAlignment="Center"/>
+                                    <CheckBox IsChecked="{Binding IsChecked, UpdateSourceTrigger=PropertyChanged}"
+                                              VerticalAlignment="Center"
+                                              Margin="2,0,0,0"/>
+                                </StackPanel>
+
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding Name}"
+                                           VerticalAlignment="Center"
+                                           Foreground="#444"
+                                           Margin="12,0,4,0"
+                                           TextTrimming="CharacterEllipsis"/>
+
+                                <TextBlock Grid.Column="3"
+                                           Text="{Binding EstimatedHours, StringFormat={}{0} ч.}"
+                                           VerticalAlignment="Center"
+                                           Foreground="Gray"/>
+
+                                <TextBlock Grid.Column="4"
+                                           Text="{Binding Deadline, StringFormat={}{0:dd.MM.yyyy}}"
+                                           VerticalAlignment="Center"
+                                           Foreground="Gray"/>
+                            </Grid>
                         </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </DataTemplate>
+        </DataGrid.RowDetailsTemplate>
 
-                <!-- Deadline -->
-                <DataGridTextColumn Header="Deadline"
-                                    Binding="{Binding Deadline, StringFormat={}{0:dd.MM.yyyy HH:mm}}"
-                                    Width="1.5*"/>
-
-                <!-- Actions -->
-                <DataGridTemplateColumn Header="Actions" Width="1.5*">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-
-                                <Button Content="Edit"
-                                        Margin="2"
-                                        Padding="5,2"
-                                        Click="Edit_Click"/>
-
-                                <Button Content="Delete"
-                                        Margin="2"
-                                        Padding="5,2"
-                                        Click="Delete_Click"/>
-
-                            </StackPanel>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-
-            </DataGrid.Columns>
-        </DataGrid>
-
-    </Grid>
+    </DataGrid>
 </UserControl>
