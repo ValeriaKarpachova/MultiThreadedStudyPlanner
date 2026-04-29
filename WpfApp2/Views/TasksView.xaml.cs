@@ -107,6 +107,20 @@ namespace WpfApp2.Views
                 RefreshTree();
         }
 
+        private void EditParts_Click(object sender, RoutedEventArgs e)
+        {
+            var task = (sender as Button)?.DataContext as TaskItem;
+            if (task == null || !task.IsSplit) return;
+
+            var dialog = new EditPartsDialog(task, manager)
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            if (dialog.ShowDialog() == true)
+                RefreshTree();
+        }
+
         private void ExpanderToggle_Checked(object sender, RoutedEventArgs e)
         {
             var toggle = sender as ToggleButton;

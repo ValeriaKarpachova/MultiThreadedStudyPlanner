@@ -63,7 +63,7 @@ namespace WpfApp2.Services
                     Name = reader.GetString(1),
                     Description = reader.IsDBNull(2) ? "" : reader.GetString(2),
                     IsChecked = reader.GetInt32(3) == 1,
-                    Deadline = reader.IsDBNull(4) ? null : DateTime.Parse(reader.GetString(4)),
+                    Deadline = reader.IsDBNull(4) ? (DateTime?)null: DateTime.ParseExact(reader.GetString(4).Substring(0, 10),"yyyy-MM-dd",System.Globalization.CultureInfo.InvariantCulture),
                     TaskType = reader.IsDBNull(5) ? "" : reader.GetString(5),
                     Priority = reader.GetInt32(6),
                     EstimatedHours = reader.IsDBNull(7) ? 0.0 : reader.GetDouble(7),
@@ -97,7 +97,7 @@ namespace WpfApp2.Services
             command.Parameters.AddWithValue("@Name", task.Name);
             command.Parameters.AddWithValue("@Description", task.Description ?? "");
             command.Parameters.AddWithValue("@IsChecked", task.IsChecked ? 1 : 0);
-            command.Parameters.AddWithValue("@Deadline", task.Deadline?.ToString("o") ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("@Deadline", task.Deadline.HasValue ? task.Deadline.Value.Date.ToString("yyyy-MM-dd"): (object)DBNull.Value);
             command.Parameters.AddWithValue("@TaskType", task.TaskType ?? "");
             command.Parameters.AddWithValue("@Priority", task.Priority);
             command.Parameters.AddWithValue("@EstimatedHours", task.EstimatedHours);
@@ -130,7 +130,7 @@ namespace WpfApp2.Services
             command.Parameters.AddWithValue("@Name", task.Name);
             command.Parameters.AddWithValue("@Description", task.Description ?? "");
             command.Parameters.AddWithValue("@IsChecked", task.IsChecked ? 1 : 0);
-            command.Parameters.AddWithValue("@Deadline", task.Deadline?.ToString("o") ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("@Deadline", task.Deadline.HasValue ? task.Deadline.Value.Date.ToString("yyyy-MM-dd") : (object)DBNull.Value);
             command.Parameters.AddWithValue("@TaskType", task.TaskType ?? "");
             command.Parameters.AddWithValue("@Priority", task.Priority);
             command.Parameters.AddWithValue("@EstimatedHours", task.EstimatedHours);
@@ -148,6 +148,16 @@ namespace WpfApp2.Services
             command.CommandText = "DELETE FROM Tasks WHERE Id=@Id OR ParentId=@Id";
             command.Parameters.AddWithValue("@Id", id);
             command.ExecuteNonQuery();
+        }
+
+        public void DeleteSubTask(int id)
+        {
+            using var connection = new SqliteConnection(connectionString);
+            connection.Open();
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = "DELETE FROM Tasks WHERE Id = @Id"; 
+            cmd.Parameters.AddWithValue("@Id", id);
+            cmd.ExecuteNonQuery();
         }
     }
 }

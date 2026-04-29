@@ -10,12 +10,14 @@ namespace WpfApp2.Services
 
         public static List<TaskItem> GetTodayTasks(List<TaskItem> tasks)
         {
-            var today = DateTime.Today;
+            var today = DateTime.Today; 
+            var tomorrow = today.AddDays(1);
 
             return tasks
                 .Where(t =>
                     t.Deadline.HasValue &&
-                    t.Deadline.Value.Date == today &&
+                    t.Deadline.Value >= today &&    
+                    t.Deadline.Value < tomorrow &&    
                     !t.IsCompleted)
                 .ToList();
         }

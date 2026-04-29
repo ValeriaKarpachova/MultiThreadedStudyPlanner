@@ -129,14 +129,53 @@
             <DataGridTemplateColumn Header="Дії" Width="1.2*">
                 <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate>
-                        <StackPanel Orientation="Horizontal">
-                            <Button Content="Редагувати" Margin="2" Padding="5,2"
-                                    Click="Edit_Click"/>
-                            <Button Content="Видалити" Margin="2" Padding="5,2"
-                                    Click="Delete_Click"/>
-                            <Button Content="Розбити" Margin="2" Padding="5,2"
-                                    Click="Split_Click"
-                                    Visibility="{Binding IsSplit, Converter={StaticResource InverseBoolToVisibility}}"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                        
+                            <Button Style="{StaticResource ImageButtonStyle}" Margin="2"
+                                Width="40" Height="40"
+                                Cursor="Hand"
+                                ToolTip="Редагувати"
+                                Click="Edit_Click"
+                                Tag="{Binding}">
+                                <Image Source="/Images/edit.png" 
+                                    Width="25" Height="25"
+                                    Stretch="Uniform"/> 
+                            </Button>
+
+                            <Button Style="{StaticResource ImageButtonStyle}" Margin="2"
+                                Width="40" Height="40"
+                                Cursor="Hand"
+                                ToolTip="Видалити"
+                                Click="Delete_Click"
+                                Tag="{Binding}">
+                                <Image Source="/Images/delete.png" 
+                                   Width="25" Height="25"
+                                   Stretch="Uniform"/>
+                            </Button>
+
+                            <Button Style="{StaticResource ImageButtonStyle}" Margin="2"
+                                Width="40" Height="40"
+                                Cursor="Hand"
+                                ToolTip="Розбити"
+                                Click="Split_Click"
+                                Visibility="{Binding IsSplit, Converter={StaticResource InverseBoolToVisibility}}"
+                                Tag="{Binding}">
+                                <Image Source="/Images/split.png" 
+                                    Width="25" Height="25"
+                                    Stretch="Uniform"/>
+                            </Button>
+
+                            <Button Style="{StaticResource ImageButtonStyle}" Margin="2"
+                                 Width="40" Height="40"
+                                 Cursor="Hand"
+                                 ToolTip="Редагувати частини"
+                                 Click="EditParts_Click"
+                                 Visibility="{Binding IsSplit, Converter={StaticResource BoolToVisibility}}"
+                                 Tag="{Binding}">
+                                <Image Source="/Images/arrow.png" 
+                                     Width="25" Height="25"
+                                     Stretch="Uniform"/>
+                            </Button>
                         </StackPanel>
                     </DataTemplate>
                 </DataGridTemplateColumn.CellTemplate>
@@ -144,7 +183,6 @@
 
         </DataGrid.Columns>
 
-        <!-- Части разбитого задания -->
         <DataGrid.RowDetailsTemplate>
             <DataTemplate>
                 <ItemsControl ItemsSource="{Binding SubTasks}"
@@ -162,13 +200,11 @@
                                     <ColumnDefinition Width="1.2*"/>
                                 </Grid.ColumnDefinitions>
 
-                                <!-- Вертикальная линия дерева -->
                                 <Border Grid.Column="0"
                                         BorderBrush="#CCCCCC"
                                         BorderThickness="0,0,1,0"
                                         Margin="44,0,0,0"/>
 
-                                <!-- Горизонтальная линия + чекбокс вместе -->
                                 <StackPanel Grid.Column="0"
                                             Orientation="Horizontal"
                                             HorizontalAlignment="Right"

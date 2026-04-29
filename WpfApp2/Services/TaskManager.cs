@@ -32,7 +32,6 @@ namespace WpfApp2.Services
 
         public void AddTask(TaskItem task)
         {
-            System.Diagnostics.Debug.WriteLine($"AddTask: {task.Name}, deadline={task.Deadline}, hours={task.EstimatedHours}");
             _db.AddTask(task);
 
             Application.Current.Dispatcher.Invoke(() =>
@@ -40,7 +39,9 @@ namespace WpfApp2.Services
                 Tasks.Add(task);
                 Subscribe(task);
                 Recalculate();
-                CheckOverload();
+
+                if (IsToday(task.Deadline))
+                    CheckOverload();
             });
         }
 
@@ -51,8 +52,17 @@ namespace WpfApp2.Services
             Application.Current.Dispatcher.Invoke(() =>
             {
                 Recalculate();
-                CheckOverload();
+
+                if (IsToday(task.Deadline))
+                    CheckOverload();
             });
+        }
+
+        private static bool IsToday(DateTime? deadline)
+        {
+            if (!deadline.HasValue) return false;
+            var today = DateTime.Today;
+            return deadline.Value >= today && deadline.Value < today.AddDays(1);
         }
 
         public void DeleteTask(TaskItem task)
@@ -75,22 +85,32 @@ namespace WpfApp2.Services
         }
         private void CheckOverload()
         {
-            double hours = PlannerService.GetTodayHours(Tasks.ToList());
+            var today = DateTime.Today;
+            var tomorrow = today.AddDays(1);
 
-            System.Diagnostics.Debug.WriteLine($"CheckOverload: hours={hours}, limit={PlannerService.DailyLimit}");
+            var todayTasks = Tasks
+                .Where(t => t.Deadline.HasValue
+                         && t.Deadline.Value >= today
+                         && t.Deadline.Value < tomorrow
+                         && !t.IsCompleted
+                         && t.ParentId == null)
+                .ToList();
 
-            if (hours > PlannerService.DailyLimit)
+            if (!todayTasks.Any()) return;
+
+            double hours = todayTasks.Sum(t => t.EstimatedHours * (1 - t.Progress / 100.0));
+            if (hours <= PlannerService.DailyLimit) return;
+
+            var dialog = new Views.OverloadDialog(todayTasks, hours, this)
             {
-                System.Diagnostics.Debug.WriteLine("Showing OverloadDialog...");
+                Owner = Application.Current.MainWindow
+            };
+            dialog.ShowDialog();
+        }
 
-                var dialog = new Views.OverloadDialog(Tasks.ToList(), hours, this)
-                {
-                    Owner = Application.Current.MainWindow 
-                };
-
-                var result = dialog.ShowDialog();
-                System.Diagnostics.Debug.WriteLine($"Dialog closed, result={result}");
-            }
+        public void DeleteSubTask(TaskItem sub)
+        {
+            Task.Run(() => _db.DeleteSubTask(sub.Id));
         }
 
         public void AddTaskSilent(TaskItem task)
