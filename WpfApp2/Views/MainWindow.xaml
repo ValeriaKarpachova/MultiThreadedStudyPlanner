@@ -1,7 +1,8 @@
 ﻿<Window x:Class="WpfApp2.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="600" Width="1000">
+        Title="Планувальник завдань"
+        Height="600" Width="1000">
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -16,7 +17,9 @@
 
         <!-- HEADER -->
         <TextBlock Grid.Row="0" Grid.Column="0"
-                   Text="NameApp"
+                   Text="Планувальник"
+                   FontSize="18"
+                   FontWeight="Bold"
                    VerticalAlignment="Center"
                    Margin="10"/>
 
@@ -37,27 +40,27 @@
         <!-- LEFT PANEL -->
         <StackPanel Grid.Row="1" Grid.Column="0" Margin="10">
 
-            <Button Content="Home"
+            <Button Content="Головна"
                     Style="{StaticResource FlatButton}"
                     Margin="0,5"
                     Click="Home_Click"/>
 
-            <Button Content="Today"
+            <Button Content="Сьогодні"
                     Style="{StaticResource FlatButton}"
                     Margin="0,5"
                     Click="Today_Click"/>
 
-            <Button Content="Completed"
+            <Button Content="Виконані"
                     Style="{StaticResource FlatButton}"
                     Margin="0,5"
                     Click="Completed_Click"/>
 
-            <Button Content="Calendar"
+            <Button Content="Календар"
                     Style="{StaticResource FlatButton}"
                     Margin="0,5"
                     Click="Calendar_Click"/>
 
-            <Button Content="Statistics"
+            <Button Content="Статистика"
                     Style="{StaticResource FlatButton}"
                     Margin="0,5"
                     Click="Statistics_Click"/>

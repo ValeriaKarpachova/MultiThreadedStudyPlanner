@@ -18,7 +18,6 @@ namespace WpfApp2
             if (task != null)
             {
                 NameBox.Text = task.Name;
-                // Progress убран — он вычисляемый
                 DeadlinePicker.SelectedDate = task.Deadline;
                 EstimatedBox.Text = task.EstimatedHours.ToString();
             }

@@ -29,27 +29,49 @@ namespace WpfApp2.Services
                     {
                         await Application.Current.Dispatcher.InvokeAsync(() =>
                         {
+                            MoveOverdueTasks();
                             _manager.Recalculate();
                         });
                     }
-                    catch (OperationCanceledException) { break; } // ← нормальное завершение
+                    catch (OperationCanceledException) { break; }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"BackgroundProcessor error: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine(
+                            $"BackgroundProcessor error: {ex.Message}");
                     }
 
-                    try
-                    {
-                        await Task.Delay(TimeSpan.FromMinutes(1), token);
-                    }
+                    try { await Task.Delay(TimeSpan.FromMinutes(1), token); }
                     catch (OperationCanceledException) { break; }
                 }
             }, token);
         }
 
-        public void Stop()
+        private void MoveOverdueTasks()
         {
-            _cts?.Cancel();
+            var yesterday = DateTime.Today.AddDays(-1);
+            var tomorrow = DateTime.Today.AddDays(1);
+
+            foreach (var task in _manager.Tasks.ToList())
+            {
+                if (!task.Deadline.HasValue) continue;
+                if (task.IsCompleted) continue;
+                if (task.Deadline.Value.Date >= DateTime.Today) continue;
+
+                if (task.ParentId.HasValue)
+                {
+                    task.Deadline = tomorrow;
+                    _manager.UpdateTask(task);
+                    continue;
+                }
+
+                if (!task.IsSplit)
+                {
+                    task.Deadline = tomorrow;
+                    _manager.UpdateTask(task);
+                }
+            }
         }
+
+        public void Stop() => _cts?.Cancel();
     }
 }

@@ -29,7 +29,6 @@ namespace WpfApp2.Services
         );";
             command.ExecuteNonQuery();
 
-            // Миграция если таблица уже существует без новых колонок
             TryAddColumn(connection, "IsChecked", "INTEGER DEFAULT 0");
             TryAddColumn(connection, "ParentId", "INTEGER");
         }
@@ -42,7 +41,7 @@ namespace WpfApp2.Services
                 cmd.CommandText = $"ALTER TABLE Tasks ADD COLUMN {column} {type}";
                 cmd.ExecuteNonQuery();
             }
-            catch { /* колонка уже существует */ }
+            catch {  }
         }
 
         public List<TaskItem> LoadTasks()
@@ -72,7 +71,6 @@ namespace WpfApp2.Services
                 });
             }
 
-            // Собираем дерево: дочерние добавляем к родителям
             var roots = list.Where(t => t.ParentId == null).ToList();
             var children = list.Where(t => t.ParentId != null).ToList();
 
@@ -146,7 +144,6 @@ namespace WpfApp2.Services
             using var connection = new SqliteConnection(connectionString);
             connection.Open();
 
-            // Удаляем и задание и все его части
             var command = connection.CreateCommand();
             command.CommandText = "DELETE FROM Tasks WHERE Id=@Id OR ParentId=@Id";
             command.Parameters.AddWithValue("@Id", id);

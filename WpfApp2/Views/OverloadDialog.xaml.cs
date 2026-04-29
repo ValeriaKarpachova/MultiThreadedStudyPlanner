@@ -19,15 +19,18 @@ namespace WpfApp2.Views
 
             HoursText.Text = $"Заплановано {hours:F1} ч. при ліміті {PlannerService.DailyLimit} ч.";
 
-            // Картка "Перенести"
             var toMove = GetTasksToMove();
             MoveText.Text = toMove.Any()
                 ? "На завтра перейдуть:\n" + string.Join("\n", toMove.Select(t => $"• {t.Name}"))
                 : "Нічого переносити.";
 
-            // Заповнюємо ComboBox — всі незавершені задачі з дедлайном
+            var today = DateTime.Today;
             var splittable = _tasks
-                .Where(t => !t.IsCompleted && !t.IsSplit && t.EstimatedHours > 0)
+                .Where(t => !t.IsCompleted
+                         && !t.IsSplit
+                         && t.EstimatedHours > 0
+                         && t.Deadline.HasValue
+                         && t.Deadline.Value.Date == today) 
                 .OrderByDescending(t => t.EstimatedHours)
                 .ToList();
 

@@ -24,7 +24,7 @@ namespace WpfApp2.Services
             foreach (var t in tasks)
             {
                 Subscribe(t);
-                SubscribeToSubTasks(t); // Добавить эту строку
+                SubscribeToSubTasks(t);
                 Tasks.Add(t);
             }
             Recalculate();
@@ -85,7 +85,7 @@ namespace WpfApp2.Services
 
                 var dialog = new Views.OverloadDialog(Tasks.ToList(), hours, this)
                 {
-                    Owner = Application.Current.MainWindow // ← диалог поверх главного окна
+                    Owner = Application.Current.MainWindow 
                 };
 
                 var result = dialog.ShowDialog();
@@ -126,15 +126,12 @@ namespace WpfApp2.Services
                 parent.SubTasks.Add(sub);
                 Subscribe(sub);
 
-                // При отметке части обновляем прогресс родителя И сохраняем в БД
                 sub.PropertyChanged += (s, e) =>
                 {
                     if (e.PropertyName == nameof(TaskItem.IsChecked))
                     {
-                        // Обновляем родителя
                         parent.RefreshParent();
 
-                        // Сохраняем изменения дочерней задачи
                         if (!IsEditing)
                             Task.Run(() =>
                             {
@@ -157,13 +154,26 @@ namespace WpfApp2.Services
         {
             foreach (var sub in parent.SubTasks)
             {
-                sub.PropertyChanged += (s, e) =>
+                var captured = sub; 
+                captured.PropertyChanged += (s, e) =>
                 {
                     if (e.PropertyName == nameof(TaskItem.IsChecked))
                     {
                         parent.RefreshParent();
                         if (!IsEditing)
-                            Task.Run(() => _db.UpdateTask(parent));
+                            Task.Run(() =>
+                            {
+                                try
+                                {
+                                    _db.UpdateTask(captured); 
+                                    _db.UpdateTask(parent);  
+                                }
+                                catch (Exception ex)
+                                {
+                                    System.Diagnostics.Debug.WriteLine(
+                                        $"SubscribeToSubTasks error: {ex.Message}");
+                                }
+                            });
                     }
                 };
             }

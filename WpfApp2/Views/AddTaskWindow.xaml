@@ -1,43 +1,47 @@
 <Window x:Class="WpfApp2.AddTaskWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Add Task" Height="450" Width="350" FontSize="16" ResizeMode="NoResize" WindowStartupLocation="CenterScreen">
+        Title="Додати завдання"
+        Height="450" Width="350"
+        FontSize="16"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen">
 
     <StackPanel Margin="10">
 
-        <TextBlock Text="Task Name"/>
+        <TextBlock Text="Назва завдання"/>
         <TextBox x:Name="NameBox" Margin="0,5"/>
 
-        <TextBlock Text="Description"/>
+        <TextBlock Text="Опис"/>
         <TextBox x:Name="Description" Margin="0,5"/>
 
-        <TextBlock Text="Estimated time (hours)"/>
+        <TextBlock Text="Орієнтовний час (години)"/>
         <TextBox x:Name="EstimatedBox" Margin="0,5"/>
 
-        <TextBlock Text="Deadline"/>
+        <TextBlock Text="Кінцевий термін"/>
         <DatePicker x:Name="DeadlinePicker" Margin="0,5"/>
 
-        <TextBlock Text="Task Type"/>
+        <TextBlock Text="Тип завдання"/>
         <ComboBox x:Name="TypeBox" Margin="0,5">
             <ComboBoxItem Content="Без типу" IsSelected="True"/>
-            <ComboBoxItem Content="Lecture"/>
-            <ComboBoxItem Content="Laboratory Work"/>
-            <ComboBoxItem Content="Independent Study"/>
-            <ComboBoxItem Content="Test"/>
-            <ComboBoxItem Content="Course Project"/>
-            <ComboBoxItem Content="Diploma Project"/>
-            <ComboBoxItem Content="Seminar"/>
-            <ComboBoxItem Content="Practical Class"/>
-            <ComboBoxItem Content="Homework"/>
-            <ComboBoxItem Content="Essay"/>
-            <ComboBoxItem Content="Presentation"/>
-            <ComboBoxItem Content="Exam"/>
-            <ComboBoxItem Content="Quiz"/>
-            <ComboBoxItem Content="Research Paper"/>
-            <ComboBoxItem Content="Internship"/>
+            <ComboBoxItem Content="Лекція"/>
+            <ComboBoxItem Content="Лабораторна робота"/>
+            <ComboBoxItem Content="Самостійна робота"/>
+            <ComboBoxItem Content="Тест"/>
+            <ComboBoxItem Content="Курсовий проєкт"/>
+            <ComboBoxItem Content="Дипломний проєкт"/>
+            <ComboBoxItem Content="Семінар"/>
+            <ComboBoxItem Content="Практичне заняття"/>
+            <ComboBoxItem Content="Домашнє завдання"/>
+            <ComboBoxItem Content="Есе"/>
+            <ComboBoxItem Content="Презентація"/>
+            <ComboBoxItem Content="Іспит"/>
+            <ComboBoxItem Content="Контрольна робота"/>
+            <ComboBoxItem Content="Наукова робота"/>
+            <ComboBoxItem Content="Практика"/>
         </ComboBox>
 
-        <Button Content="Add"
+        <Button Content="Додати"
                 Margin="0,10"
                 Click="Add_Click"/>
 

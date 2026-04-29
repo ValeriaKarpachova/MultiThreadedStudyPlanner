@@ -35,7 +35,7 @@ namespace WpfApp2.Views
                 if (e.PropertyName == nameof(TaskItem.IsChecked) ||
                     e.PropertyName == nameof(TaskItem.Progress))
                 {
-                    RefreshTree(); // Обновляем отображение при изменении статуса
+                    RefreshTree(); 
                 }
             };
             
@@ -45,7 +45,7 @@ namespace WpfApp2.Views
                 {
                     if (e.PropertyName == nameof(TaskItem.IsChecked))
                     {
-                        task.RefreshParent(); // Обновляем родителя
+                        task.RefreshParent(); 
                         RefreshTree();
                     }
                 };
@@ -59,7 +59,15 @@ namespace WpfApp2.Views
             var filtered = manager.Tasks.Where(t => viewMode switch
             {
                 MainWindow.TaskViewMode.Today =>
-                    t.Deadline.HasValue && t.Deadline.Value.Date == today && !t.IsCompleted,
+                    t.IsSplit
+                        ? t.SubTasks.Any(s =>
+                            s.Deadline.HasValue &&
+                            s.Deadline.Value.Date == today &&
+                            !s.IsChecked)
+                        : t.Deadline.HasValue &&
+                          t.Deadline.Value.Date == today &&
+                          !t.IsCompleted,
+
                 MainWindow.TaskViewMode.Completed => t.IsCompleted,
                 _ => !t.IsCompleted
             }).OrderByDescending(t => t.Priority).ToList();
@@ -136,19 +144,5 @@ namespace WpfApp2.Views
             return null;
         }
 
-        private void ToggleExpander_Click(object sender, RoutedEventArgs e)
-        {
-            var button = sender as Button;
-            var task = button?.Tag as TaskItem;
-            if (task == null || !task.IsSplit) return;
-
-            var row = FindParentDataGridRow(button);
-            if (row != null)
-            {
-                row.DetailsVisibility = row.DetailsVisibility == Visibility.Visible
-                    ? Visibility.Collapsed
-                    : Visibility.Visible;
-            }
-        }
     }
 }

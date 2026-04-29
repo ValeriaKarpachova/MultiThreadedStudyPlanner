@@ -130,9 +130,9 @@
                 <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
-                            <Button Content="Edit" Margin="2" Padding="5,2"
+                            <Button Content="Редагувати" Margin="2" Padding="5,2"
                                     Click="Edit_Click"/>
-                            <Button Content="Delete" Margin="2" Padding="5,2"
+                            <Button Content="Видалити" Margin="2" Padding="5,2"
                                     Click="Delete_Click"/>
                             <Button Content="Розбити" Margin="2" Padding="5,2"
                                     Click="Split_Click"

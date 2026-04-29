@@ -15,11 +15,11 @@ namespace WpfApp2.Views
             var report = ProductivityService.Analyze(manager.Tasks.ToList());
 
             SummaryText.Text =
-                $"Total: {report.TotalTasks}\n" +
-                $"Completed: {report.CompletedTasks}\n" +
-                $"Overdue: {report.OverdueTasks}\n" +
-                $"Average Progress: {report.AverageProgress:F1}%\n" +
-                $"Productivity: {report.ProductivityPercent:F1}%";
+                $"Всього завдань: {report.TotalTasks}\n" +
+                $"Виконано: {report.CompletedTasks}\n" +
+                $"Прострочені: {report.OverdueTasks}\n" +
+                $"Середній прогрес: {report.AverageProgress:F1}%\n" +
+                $"Продуктивність: {report.ProductivityPercent:F1}%";
 
             TasksChart.Series = new ISeries[]
             {
@@ -38,7 +38,7 @@ namespace WpfApp2.Views
             {
                 new Axis
                 {
-                    Labels = new[] { "Completed", "Active", "Overdue" }
+                    Labels = new[] { "Виконані", "Активні", "Прострочені" }
                 }
             };
         }

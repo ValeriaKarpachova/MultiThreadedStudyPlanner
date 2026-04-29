@@ -10,12 +10,29 @@ namespace WpfApp2.Views
     public class SubTaskEntry : INotifyPropertyChanged
     {
         public int Index { get; set; }
+
         private string _name = "";
         public string Name
         {
             get => _name;
-            set { _name = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Name))); }
+            set { _name = value; Notify(nameof(Name)); }
         }
+
+        private string _hours = "1";
+        public string Hours  
+        {
+            get => _hours;
+            set { _hours = value; Notify(nameof(Hours)); }
+        }
+
+        public double ParsedHours =>
+            double.TryParse(_hours,
+                System.Globalization.NumberStyles.Any,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out var h) && h > 0 ? h : 1.0;
+
+        private void Notify(string n) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(n));
         public event PropertyChangedEventHandler? PropertyChanged;
     }
 
@@ -23,7 +40,7 @@ namespace WpfApp2.Views
     {
         private readonly TaskItem _task;
         private readonly TaskManager _manager;
-        private bool _initialized = false; // ← прапор готовності
+        private bool _initialized = false;
         public ObservableCollection<SubTaskEntry> Entries { get; } = new();
 
         public SplitTaskDialog(TaskItem task, TaskManager manager)
@@ -38,14 +55,14 @@ namespace WpfApp2.Views
             SubTasksList.ItemsSource = Entries;
             PartsLabel.Text = "3";
 
-            _initialized = true; // ← тільки після прив'язки елементів
+            _initialized = true;
             UpdateEntries(3);
         }
 
-        private void PartsSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void PartsSlider_ValueChanged(object sender,
+            RoutedPropertyChangedEventArgs<double> e)
         {
-            if (!_initialized) return; // ← ігноруємо виклик під час XAML-ініціалізації
-
+            if (!_initialized) return;
             int parts = (int)e.NewValue;
             PartsLabel.Text = parts.ToString();
             UpdateEntries(parts);
@@ -54,29 +71,48 @@ namespace WpfApp2.Views
         private void UpdateEntries(int parts)
         {
             var names = TaskTypeService.GetDefaultSubTaskNames(_task.TaskType, parts);
+            double hoursPerPart = Math.Round(_task.EstimatedHours / parts, 1);
+
             Entries.Clear();
             for (int i = 0; i < parts; i++)
-                Entries.Add(new SubTaskEntry { Index = i + 1, Name = names[i] });
+            {
+                double h = i == parts - 1
+                    ? Math.Round(_task.EstimatedHours - hoursPerPart * (parts - 1), 1)
+                    : hoursPerPart;
+
+                Entries.Add(new SubTaskEntry
+                {
+                    Index = i + 1,
+                    Name = names[i],
+                    Hours = h.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                });
+            }
         }
 
         private void Confirm_Click(object sender, RoutedEventArgs e)
         {
             int parts = (int)PartsSlider.Value;
-            var names = Entries.Select(en => en.Name).ToList();
-            var subTasks = PlannerService.SplitTask(_task, parts, names);
+            var today = DateTime.Today;
+
+            var subTasks = Entries.Select((en, i) => new TaskItem
+            {
+                Name = en.Name,
+                Description = "",
+                TaskType = _task.TaskType,
+                Priority = _task.Priority,
+                ParentId = _task.Id,
+                Deadline = today.AddDays(i),  
+                EstimatedHours = en.ParsedHours,
+                IsChecked = false
+            }).ToList();
 
             foreach (var sub in subTasks)
-            {
-                sub.ParentId = _task.Id;
                 _manager.AddSubTask(_task, sub);
-            }
 
             DialogResult = true;
         }
 
-        private void Cancel_Click(object sender, RoutedEventArgs e)
-        {
+        private void Cancel_Click(object sender, RoutedEventArgs e) =>
             DialogResult = false;
-        }
     }
 }
