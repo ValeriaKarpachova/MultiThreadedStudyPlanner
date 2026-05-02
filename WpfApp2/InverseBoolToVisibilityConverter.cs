@@ -8,9 +8,17 @@ namespace WpfApp2
     public class InverseBoolToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-            => value is true ? Visibility.Collapsed : Visibility.Visible;
+        {
+            if (value is bool boolValue)
+                return boolValue ? Visibility.Collapsed : Visibility.Visible;
+            return Visibility.Visible;
+        }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-            => throw new NotImplementedException();
+        {
+            if (value is Visibility visibility)
+                return visibility != Visibility.Visible;
+            return false;
+        }
     }
 }

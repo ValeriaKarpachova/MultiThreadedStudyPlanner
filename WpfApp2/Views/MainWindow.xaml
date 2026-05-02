@@ -2,7 +2,9 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Планувальник завдань"
-        Height="600" Width="1000">
+        Height="600" Width="1000"
+        WindowState="Maximized" WindowStyle="SingleBorderWindow"
+        xmlns:views="clr-namespace:WpfApp2.Views">
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -38,34 +40,38 @@
         </Button>
 
         <!-- LEFT PANEL -->
-        <StackPanel Grid.Row="1" Grid.Column="0" Margin="10">
+        <DockPanel Grid.Row="1" Grid.Column="0" Margin="6,4">
 
-            <Button Content="Головна"
-                    Style="{StaticResource FlatButton}"
-                    Margin="0,5"
-                    Click="Home_Click"/>
+    <!-- Навігаційні кнопки -->
+            <StackPanel DockPanel.Dock="Top">
+                <Button x:Name="BtnHome"       Content="🏠  Home"
+            Style="{StaticResource NavButton}" Click="Home_Click"/>
+                <Button x:Name="BtnToday"      Content="📅  Today"
+            Style="{StaticResource NavButton}" Click="Today_Click"/>
+                <Button x:Name="BtnCompleted"  Content="✅  Виконані"
+            Style="{StaticResource NavButton}" Click="Completed_Click"/>
+                <Button x:Name="BtnSubjects"   Content="📚  Предмети"
+            Style="{StaticResource NavButton}" Click="Subjects_Click"/>
+                <Button x:Name="BtnCalendar"   Content="🗓  Календар"
+            Style="{StaticResource NavButton}" Click="Calendar_Click"/>
+                <Button x:Name="BtnStatistics" Content="📊  Статистика"
+            Style="{StaticResource NavButton}" Click="Statistics_Click"/>
+                <Button x:Name="BtnTheme"      Content="🌙  Темна тема"
+            Style="{StaticResource NavButton}" Click="Theme_Click"/>
+                <Separator Margin="0,6"/>
+                <!-- Помідор -->
+        <views:PomodoroWidget Margin="0,0,0,6"/>
+        <Separator Margin="0,4"/>
 
-            <Button Content="Сьогодні"
-                    Style="{StaticResource FlatButton}"
-                    Margin="0,5"
-                    Click="Today_Click"/>
+        <!-- Міні-календар -->
+        <views:MiniCalendarPanel Margin="0,4,0,6"/>
+        <Separator Margin="0,4"/>
+    </StackPanel>
 
-            <Button Content="Виконані"
-                    Style="{StaticResource FlatButton}"
-                    Margin="0,5"
-                    Click="Completed_Click"/>
+    <!-- Нотатки заповнюють залишок -->
+    <views:NotesPanel/>
 
-            <Button Content="Календар"
-                    Style="{StaticResource FlatButton}"
-                    Margin="0,5"
-                    Click="Calendar_Click"/>
-
-            <Button Content="Статистика"
-                    Style="{StaticResource FlatButton}"
-                    Margin="0,5"
-                    Click="Statistics_Click"/>
-
-        </StackPanel>
+</DockPanel>
 
         <!-- MAIN CONTENT AREA -->
         <ContentControl Grid.Row="1"

@@ -1,6 +1,10 @@
-﻿using System.Collections.ObjectModel;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
+using WpfApp2.Services;
 
 namespace WpfApp2.Services
 {
@@ -15,10 +19,12 @@ namespace WpfApp2.Services
         public TaskManager(DatabaseService db)
         {
             _db = db;
+            AppLogger.Info("TaskManager", "Ініціалізовано");
         }
 
         public void Load()
         {
+            AppLogger.Info("TaskManager", "Завантаження задач...");
             var tasks = _db.LoadTasks();
             Tasks.Clear();
             foreach (var t in tasks)
@@ -28,6 +34,7 @@ namespace WpfApp2.Services
                 Tasks.Add(t);
             }
             Recalculate();
+            AppLogger.Info("TaskManager", $"Завантажено {tasks.Count} задач");
         }
 
         public void AddTask(TaskItem task)
@@ -43,6 +50,8 @@ namespace WpfApp2.Services
                 if (IsToday(task.Deadline))
                     CheckOverload();
             });
+
+            AppLogger.Info("TaskManager", $"Додано задачу \"{task.Name}\" (#{task.Id})");
         }
 
         public void UpdateTask(TaskItem task)
@@ -67,6 +76,8 @@ namespace WpfApp2.Services
 
         public void DeleteTask(TaskItem task)
         {
+            AppLogger.Warning("TaskManager", $"Видалення задачі \"{task.Name}\" (#{task.Id})");
+
             Application.Current.Dispatcher.Invoke(() =>
             {
                 Tasks.Remove(task);
@@ -76,13 +87,20 @@ namespace WpfApp2.Services
             Recalculate();
         }
 
+        private bool _isRecalculating = false;
 
         public void Recalculate()
         {
-            var snapshot = Tasks.ToList();
-            PlannerService.CalculatePriorities(snapshot);
-            ApplyUpdatedPriorities(snapshot);
+            _isRecalculating = true;
+            try
+            {
+                var snapshot = Tasks.ToList();
+                PlannerService.CalculatePriorities(snapshot);
+                ApplyUpdatedPriorities(snapshot);
+            }
+            finally { _isRecalculating = false; }
         }
+
         private void CheckOverload()
         {
             var today = DateTime.Today;
@@ -101,6 +119,9 @@ namespace WpfApp2.Services
             double hours = todayTasks.Sum(t => t.EstimatedHours * (1 - t.Progress / 100.0));
             if (hours <= PlannerService.DailyLimit) return;
 
+            AppLogger.Warning("TaskManager",
+                $"Перевантаження! {hours:F1} год > ліміту {PlannerService.DailyLimit} год");
+
             var dialog = new Views.OverloadDialog(todayTasks, hours, this)
             {
                 Owner = Application.Current.MainWindow
@@ -110,6 +131,7 @@ namespace WpfApp2.Services
 
         public void DeleteSubTask(TaskItem sub)
         {
+            AppLogger.Debug("TaskManager", $"Видалення підзадачі \"{sub.Name}\" (#{sub.Id})");
             Task.Run(() => _db.DeleteSubTask(sub.Id));
         }
 
@@ -162,7 +184,7 @@ namespace WpfApp2.Services
                                 }
                                 catch (Exception ex)
                                 {
-                                    System.Diagnostics.Debug.WriteLine($"Subscribe UpdateTask error: {ex.Message}");
+                                    AppLogger.Error("TaskManager", "Помилка оновлення підзадачі", ex);
                                 }
                             });
                     }
@@ -174,7 +196,7 @@ namespace WpfApp2.Services
         {
             foreach (var sub in parent.SubTasks)
             {
-                var captured = sub; 
+                var captured = sub;
                 captured.PropertyChanged += (s, e) =>
                 {
                     if (e.PropertyName == nameof(TaskItem.IsChecked))
@@ -185,13 +207,12 @@ namespace WpfApp2.Services
                             {
                                 try
                                 {
-                                    _db.UpdateTask(captured); 
-                                    _db.UpdateTask(parent);  
+                                    _db.UpdateTask(captured);
+                                    _db.UpdateTask(parent);
                                 }
                                 catch (Exception ex)
                                 {
-                                    System.Diagnostics.Debug.WriteLine(
-                                        $"SubscribeToSubTasks error: {ex.Message}");
+                                    AppLogger.Error("TaskManager", "Помилка синхронізації підзадачі", ex);
                                 }
                             });
                     }
@@ -203,44 +224,17 @@ namespace WpfApp2.Services
         {
             task.PropertyChanged += (s, e) =>
             {
-                if (!IsEditing)
-                    Task.Run(() =>
+                if (IsEditing || _isRecalculating) return;
+
+                Task.Run(() =>
+                {
+                    try { _db.UpdateTask(task); }
+                    catch (Exception ex)
                     {
-                        try
-                        {
-                            _db.UpdateTask(task);
-                        }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"Subscribe UpdateTask error: {ex.Message}");
-                        }
-                    });
+                        AppLogger.Error("TaskManager", $"Помилка збереження задачі #{task.Id}", ex);
+                    }
+                });
             };
-        }
-
-        public partial class App : Application
-        {
-            protected override void OnStartup(StartupEventArgs e)
-            {
-                base.OnStartup(e);
-
-                DispatcherUnhandledException += (s, ex) =>
-                {
-                    System.Diagnostics.Debug.WriteLine($"UI Exception: {ex.Exception.Message}\n{ex.Exception.StackTrace}");
-                    ex.Handled = true;
-                };
-
-                AppDomain.CurrentDomain.UnhandledException += (s, ex) =>
-                {
-                    System.Diagnostics.Debug.WriteLine($"Fatal Exception: {(ex.ExceptionObject as Exception)?.Message}");
-                };
-
-                TaskScheduler.UnobservedTaskException += (s, ex) =>
-                {
-                    System.Diagnostics.Debug.WriteLine($"Task Exception: {ex.Exception.Message}");
-                    ex.SetObserved();
-                };
-            }
         }
     }
 }

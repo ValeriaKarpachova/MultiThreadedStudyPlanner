@@ -13,15 +13,13 @@
 
         <DataGrid.Columns>
 
-            <!-- Стрелка для разбитых -->
+            <!-- Стрілка для розбитих -->
             <DataGridTemplateColumn Width="60">
                 <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate>
                         <ToggleButton x:Name="ExpanderToggle"
-                          Background="Transparent"
-                          BorderThickness="0"
-                          Cursor="Hand"
-                          Padding="8,4"
+                          Background="Transparent" BorderThickness="0"
+                          Cursor="Hand" Padding="8,4"
                           HorizontalAlignment="Stretch"
                           Visibility="{Binding IsSplit, Converter={StaticResource BoolToVisibility}}"
                           Checked="ExpanderToggle_Checked"
@@ -30,17 +28,14 @@
                             <ToggleButton.Template>
                                 <ControlTemplate TargetType="ToggleButton">
                                     <Grid Background="Transparent">
-                                        <Path x:Name="Arrow"
-                                  Data="M 0 0 L 6 4 L 0 8 Z"
-                                  Fill="#666"
-                                  HorizontalAlignment="Center"
-                                  VerticalAlignment="Center"
-                                  RenderTransformOrigin="0.5,0.5">
+                                        <Path x:Name="Arrow" Data="M 0 0 L 6 4 L 0 8 Z"
+                                              Fill="#666" HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              RenderTransformOrigin="0.5,0.5">
                                             <Path.RenderTransform>
                                                 <RotateTransform Angle="0"/>
                                             </Path.RenderTransform>
                                         </Path>
-                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Grid>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
@@ -51,9 +46,9 @@
                                                 <BeginStoryboard>
                                                     <Storyboard>
                                                         <DoubleAnimation
-                                                Storyboard.TargetName="Arrow"
-                                                Storyboard.TargetProperty="(Path.RenderTransform).(RotateTransform.Angle)"
-                                                To="90" Duration="0:0:0.15"/>
+                                                            Storyboard.TargetName="Arrow"
+                                                            Storyboard.TargetProperty="(Path.RenderTransform).(RotateTransform.Angle)"
+                                                            To="90" Duration="0:0:0.15"/>
                                                     </Storyboard>
                                                 </BeginStoryboard>
                                             </Trigger.EnterActions>
@@ -61,9 +56,9 @@
                                                 <BeginStoryboard>
                                                     <Storyboard>
                                                         <DoubleAnimation
-                                                Storyboard.TargetName="Arrow"
-                                                Storyboard.TargetProperty="(Path.RenderTransform).(RotateTransform.Angle)"
-                                                To="0" Duration="0:0:0.15"/>
+                                                            Storyboard.TargetName="Arrow"
+                                                            Storyboard.TargetProperty="(Path.RenderTransform).(RotateTransform.Angle)"
+                                                            To="0" Duration="0:0:0.15"/>
                                                     </Storyboard>
                                                 </BeginStoryboard>
                                             </Trigger.ExitActions>
@@ -76,27 +71,32 @@
                 </DataGridTemplateColumn.CellTemplate>
             </DataGridTemplateColumn>
 
-            <!-- Название -->
+            <!-- Назва -->
             <DataGridTemplateColumn Header="Назва" Width="2*">
                 <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding Name}"
-                                   FontWeight="SemiBold"
+                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
                                    VerticalAlignment="Center"
-                                   TextTrimming="CharacterEllipsis"
-                                   Margin="4,0"/>
+                                   TextTrimming="CharacterEllipsis" Margin="4,0"/>
                     </DataTemplate>
                 </DataGridTemplateColumn.CellTemplate>
             </DataGridTemplateColumn>
 
-            <!-- Тип -->
-            <DataGridTextColumn Header="Тип"
-                                Binding="{Binding TaskType}"
-                                Width="1*"/>
+            <!-- Опис -->
+            <DataGridTemplateColumn Header="Опис" Width="1.5*">
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Description}"
+                                   TextTrimming="CharacterEllipsis"
+                                   VerticalAlignment="Center"
+                                   Foreground="Gray" Margin="4,0"/>
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>
 
-            <!-- Години -->
+            <!-- Години: F1 формат -->
             <DataGridTextColumn Header="Години"
-                                Binding="{Binding EstimatedHours, StringFormat={}{0} ч.}"
+                                Binding="{Binding EstimatedHours, StringFormat={}{0:F1} ч.}"
                                 Width="0.7*"/>
 
             <!-- Дедлайн -->
@@ -104,19 +104,16 @@
                                 Binding="{Binding Deadline, StringFormat={}{0:dd.MM.yyyy}}"
                                 Width="1*"/>
 
-            <!-- Прогресс / Чекбокс -->
+            <!-- Прогрес / Чекбокс -->
             <DataGridTemplateColumn Header="Прогрес" Width="1.5*">
                 <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate>
                         <StackPanel VerticalAlignment="Center" Margin="4,0">
-                            <!-- Прогресс для разбитых -->
-                            <ProgressBar Value="{Binding Progress, Mode=OneWay}"
-                                         Height="8"
+                            <ProgressBar Value="{Binding Progress, Mode=OneWay}" Height="8"
                                          Visibility="{Binding IsSplit, Converter={StaticResource BoolToVisibility}}"/>
                             <TextBlock Text="{Binding Progress, StringFormat={}{0}%, Mode=OneWay}"
                                        FontSize="11" Foreground="Gray"
                                        Visibility="{Binding IsSplit, Converter={StaticResource BoolToVisibility}}"/>
-                            <!-- Чекбокс для обычных -->
                             <CheckBox IsChecked="{Binding IsChecked, UpdateSourceTrigger=PropertyChanged}"
                                       Visibility="{Binding IsSplit, Converter={StaticResource InverseBoolToVisibility}}"
                                       VerticalAlignment="Center"/>
@@ -125,56 +122,34 @@
                 </DataGridTemplateColumn.CellTemplate>
             </DataGridTemplateColumn>
 
-            <!-- Действия -->
+            <!-- Дії -->
             <DataGridTemplateColumn Header="Дії" Width="1.2*">
                 <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                        
                             <Button Style="{StaticResource ImageButtonStyle}" Margin="2"
-                                Width="40" Height="40"
-                                Cursor="Hand"
-                                ToolTip="Редагувати"
-                                Click="Edit_Click"
-                                Tag="{Binding}">
-                                <Image Source="/Images/edit.png" 
-                                    Width="25" Height="25"
-                                    Stretch="Uniform"/> 
+                                    Width="40" Height="40" Cursor="Hand"
+                                    ToolTip="Редагувати" Click="Edit_Click" Tag="{Binding}">
+                                <Image Source="/Images/edit.png" Width="25" Height="25" Stretch="Uniform"/>
                             </Button>
-
                             <Button Style="{StaticResource ImageButtonStyle}" Margin="2"
-                                Width="40" Height="40"
-                                Cursor="Hand"
-                                ToolTip="Видалити"
-                                Click="Delete_Click"
-                                Tag="{Binding}">
-                                <Image Source="/Images/delete.png" 
-                                   Width="25" Height="25"
-                                   Stretch="Uniform"/>
+                                    Width="40" Height="40" Cursor="Hand"
+                                    ToolTip="Видалити" Click="Delete_Click" Tag="{Binding}">
+                                <Image Source="/Images/delete.png" Width="25" Height="25" Stretch="Uniform"/>
                             </Button>
-
                             <Button Style="{StaticResource ImageButtonStyle}" Margin="2"
-                                Width="40" Height="40"
-                                Cursor="Hand"
-                                ToolTip="Розбити"
-                                Click="Split_Click"
-                                Visibility="{Binding IsSplit, Converter={StaticResource InverseBoolToVisibility}}"
-                                Tag="{Binding}">
-                                <Image Source="/Images/split.png" 
-                                    Width="25" Height="25"
-                                    Stretch="Uniform"/>
+                                    Width="40" Height="40" Cursor="Hand"
+                                    ToolTip="Розбити" Click="Split_Click"
+                                    Visibility="{Binding IsSplit, Converter={StaticResource InverseBoolToVisibility}}"
+                                    Tag="{Binding}">
+                                <Image Source="/Images/split.png" Width="25" Height="25" Stretch="Uniform"/>
                             </Button>
-
                             <Button Style="{StaticResource ImageButtonStyle}" Margin="2"
-                                 Width="40" Height="40"
-                                 Cursor="Hand"
-                                 ToolTip="Редагувати частини"
-                                 Click="EditParts_Click"
-                                 Visibility="{Binding IsSplit, Converter={StaticResource BoolToVisibility}}"
-                                 Tag="{Binding}">
-                                <Image Source="/Images/arrow.png" 
-                                     Width="25" Height="25"
-                                     Stretch="Uniform"/>
+                                    Width="40" Height="40" Cursor="Hand"
+                                    ToolTip="Редагувати частини" Click="EditParts_Click"
+                                    Visibility="{Binding IsSplit, Converter={StaticResource BoolToVisibility}}"
+                                    Tag="{Binding}">
+                                <Image Source="/Images/arrow.png" Width="25" Height="25" Stretch="Uniform"/>
                             </Button>
                         </StackPanel>
                     </DataTemplate>
@@ -183,10 +158,10 @@
 
         </DataGrid.Columns>
 
+        <!-- Розгортання підзадач -->
         <DataGrid.RowDetailsTemplate>
             <DataTemplate>
-                <ItemsControl ItemsSource="{Binding SubTasks}"
-                              Margin="37,2,0,6">
+                <ItemsControl ItemsSource="{Binding SubTasks}" Margin="37,2,0,6">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Grid Margin="0,3">
@@ -200,40 +175,29 @@
                                     <ColumnDefinition Width="1.2*"/>
                                 </Grid.ColumnDefinitions>
 
-                                <Border Grid.Column="0"
-                                        BorderBrush="#CCCCCC"
-                                        BorderThickness="0,0,1,0"
-                                        Margin="44,0,0,0"/>
+                                <Border Grid.Column="0" BorderBrush="#CCCCCC"
+                                        BorderThickness="0,0,1,0" Margin="44,0,0,0"/>
 
-                                <StackPanel Grid.Column="0"
-                                            Orientation="Horizontal"
-                                            HorizontalAlignment="Right"
-                                            VerticalAlignment="Center">
-                                    <Border Width="12"
-                                            BorderBrush="#CCCCCC"
-                                            BorderThickness="0,1,0,0"
-                                            VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="0" Orientation="Horizontal"
+                                            HorizontalAlignment="Right" VerticalAlignment="Center">
+                                    <Border Width="12" BorderBrush="#CCCCCC"
+                                            BorderThickness="0,1,0,0" VerticalAlignment="Center"/>
                                     <CheckBox IsChecked="{Binding IsChecked, UpdateSourceTrigger=PropertyChanged}"
-                                              VerticalAlignment="Center"
-                                              Margin="2,0,0,0"/>
+                                              VerticalAlignment="Center" Margin="2,0,0,0"/>
                                 </StackPanel>
 
-                                <TextBlock Grid.Column="1"
-                                           Text="{Binding Name}"
-                                           VerticalAlignment="Center"
-                                           Foreground="#444"
-                                           Margin="12,0,4,0"
-                                           TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Name}"
+                                           VerticalAlignment="Center" Foreground="#444"
+                                           Margin="12,0,4,0" TextTrimming="CharacterEllipsis"/>
 
+                                <!-- Години підзадачі: F1 -->
                                 <TextBlock Grid.Column="3"
-                                           Text="{Binding EstimatedHours, StringFormat={}{0} ч.}"
-                                           VerticalAlignment="Center"
-                                           Foreground="Gray"/>
+                                           Text="{Binding EstimatedHours, StringFormat={}{0:F1} ч.}"
+                                           VerticalAlignment="Center" Foreground="Gray"/>
 
                                 <TextBlock Grid.Column="4"
                                            Text="{Binding Deadline, StringFormat={}{0:dd.MM.yyyy}}"
-                                           VerticalAlignment="Center"
-                                           Foreground="Gray"/>
+                                           VerticalAlignment="Center" Foreground="Gray"/>
                             </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>

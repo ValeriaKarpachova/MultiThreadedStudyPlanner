@@ -1,9 +1,10 @@
-﻿using System.Windows;
+using System;
+using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
-using WpfApp2.Services;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
+using WpfApp2.Services;
 
 namespace WpfApp2.Views
 {
@@ -23,9 +24,7 @@ namespace WpfApp2.Views
             manager.Tasks.CollectionChanged += (s, e) => RefreshTree();
 
             foreach (var task in manager.Tasks)
-            {
                 SubscribeToTask(task);
-            }
         }
 
         private void SubscribeToTask(TaskItem task)
@@ -34,18 +33,16 @@ namespace WpfApp2.Views
             {
                 if (e.PropertyName == nameof(TaskItem.IsChecked) ||
                     e.PropertyName == nameof(TaskItem.Progress))
-                {
-                    RefreshTree(); 
-                }
+                    RefreshTree();
             };
-            
+
             foreach (var sub in task.SubTasks)
             {
                 sub.PropertyChanged += (s, e) =>
                 {
                     if (e.PropertyName == nameof(TaskItem.IsChecked))
                     {
-                        task.RefreshParent(); 
+                        task.RefreshParent();
                         RefreshTree();
                     }
                 };
@@ -54,7 +51,7 @@ namespace WpfApp2.Views
 
         private void RefreshTree()
         {
-            var today = System.DateTime.Today;
+            var today = DateTime.Today;
 
             var filtered = manager.Tasks.Where(t => viewMode switch
             {
@@ -116,7 +113,6 @@ namespace WpfApp2.Views
             {
                 Owner = Window.GetWindow(this)
             };
-
             if (dialog.ShowDialog() == true)
                 RefreshTree();
         }
@@ -124,27 +120,15 @@ namespace WpfApp2.Views
         private void ExpanderToggle_Checked(object sender, RoutedEventArgs e)
         {
             var toggle = sender as ToggleButton;
-            var task = toggle?.Tag as TaskItem;
-            if (task == null || !task.IsSplit) return;
-
             var row = FindParentDataGridRow(toggle);
-            if (row != null)
-            {
-                row.DetailsVisibility = Visibility.Visible;
-            }
+            if (row != null) row.DetailsVisibility = Visibility.Visible;
         }
 
         private void ExpanderToggle_Unchecked(object sender, RoutedEventArgs e)
         {
             var toggle = sender as ToggleButton;
-            var task = toggle?.Tag as TaskItem;
-            if (task == null || !task.IsSplit) return;
-
             var row = FindParentDataGridRow(toggle);
-            if (row != null)
-            {
-                row.DetailsVisibility = Visibility.Collapsed;
-            }
+            if (row != null) row.DetailsVisibility = Visibility.Collapsed;
         }
 
         private DataGridRow FindParentDataGridRow(DependencyObject child)
@@ -157,6 +141,5 @@ namespace WpfApp2.Views
             }
             return null;
         }
-
     }
 }

@@ -14,6 +14,45 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign2.Defaults.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
+            <local:StringToBrushConverter x:Key="StringToBrush"/>
+
+            <Style x:Key="NavButton" TargetType="Button">
+                <Setter Property="Background"              Value="Transparent"/>
+                <Setter Property="BorderThickness"         Value="0"/>
+                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                <Setter Property="Padding"                Value="10,8"/>
+                <Setter Property="Margin"                 Value="0,2"/>
+                <Setter Property="FontSize"               Value="13"/>
+                <Setter Property="Cursor"                 Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                        CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="#1A534AB7"/>
+                                </Trigger>
+                                <Trigger Property="Tag" Value="active">
+                                    <Setter TargetName="Bd" Property="Background" Value="#2A534AB7"/>
+                                    <Setter Property="FontWeight"                   Value="SemiBold"/>
+                                    <Setter Property="Foreground"                   Value="#534AB7"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            
+            <Style x:Key="KpiCard" TargetType="Border">
+                <Setter Property="CornerRadius" Value="10"/>
+                <Setter Property="Background"   Value="#F5F4FF"/>
+                <Setter Property="Padding"      Value="14,12"/>
+                <Setter Property="Margin"       Value="0,0,10,0"/>
+            </Style>
+            
             <Style x:Key="FlatButton" TargetType="Button">
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="BorderThickness" Value="0"/>

@@ -102,7 +102,8 @@ public class TaskItem : INotifyPropertyChanged
     public void OnPropertyChanged(string name)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
-    // Метод для обновления родителя при изменении дочерних заданий
+    public int? SubjectId { get; set; }
+
     public void RefreshParent()
     {
         OnPropertyChanged(nameof(Progress));

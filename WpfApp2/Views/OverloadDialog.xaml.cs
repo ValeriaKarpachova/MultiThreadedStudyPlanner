@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using WpfApp2.Services;
 
 namespace WpfApp2.Views
@@ -30,7 +31,7 @@ namespace WpfApp2.Views
                          && !t.IsSplit
                          && t.EstimatedHours > 0
                          && t.Deadline.HasValue
-                         && t.Deadline.Value.Date == today) 
+                         && t.Deadline.Value.Date == today)
                 .OrderByDescending(t => t.EstimatedHours)
                 .ToList();
 
@@ -39,26 +40,40 @@ namespace WpfApp2.Views
                 SplitTaskCombo.SelectedIndex = 0;
         }
 
+        // Використовуємо TodayHours через PlannerService — враховує підзадачі
         private List<TaskItem> GetTasksToMove()
         {
             var today = DateTime.Today;
             var todayTasks = _tasks
-                .Where(t => t.Deadline.HasValue &&
-                            t.Deadline.Value.Date == today &&
-                            !t.IsCompleted)
+                .Where(t => !t.IsCompleted && t.Deadline.HasValue &&
+                            t.Deadline.Value.Date == today)
                 .OrderBy(t => t.Priority)
                 .ToList();
 
-            double totalHours = todayTasks.Sum(t => t.RemainingHours);
+            double totalHours = todayTasks.Sum(t => GetEffectiveTodayHours(t));
             var toMove = new List<TaskItem>();
 
             foreach (var task in todayTasks)
             {
                 if (totalHours <= PlannerService.DailyLimit) break;
-                totalHours -= task.RemainingHours;
+                totalHours -= GetEffectiveTodayHours(task);
                 toMove.Add(task);
             }
             return toMove;
+        }
+
+        // Для розбитих — тільки години сьогоднішніх підзадач
+        private static double GetEffectiveTodayHours(TaskItem t)
+        {
+            if (!t.IsSplit)
+                return t.EstimatedHours * (1 - t.Progress / 100.0);
+
+            var today = DateTime.Today;
+            return t.SubTasks
+                .Where(s => s.Deadline.HasValue &&
+                            s.Deadline.Value.Date == today &&
+                            !s.IsChecked)
+                .Sum(s => s.EstimatedHours);
         }
 
         private void Move_Click(object sender, RoutedEventArgs e)
@@ -78,18 +93,11 @@ namespace WpfApp2.Views
                 return;
             }
 
-            var dialog = new SplitTaskDialog(selected, _taskManager)
-            {
-                Owner = this
-            };
-
+            var dialog = new SplitTaskDialog(selected, _taskManager) { Owner = this };
             if (dialog.ShowDialog() == true)
                 DialogResult = true;
         }
 
-        private void Ignore_Click(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
+        private void Ignore_Click(object sender, RoutedEventArgs e) => Close();
     }
 }

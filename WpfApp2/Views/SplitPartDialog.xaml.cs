@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
@@ -8,8 +8,8 @@ namespace WpfApp2.Views
 {
     public partial class SplitPartDialog : Window
     {
-        private readonly TaskItem _sub;     
-        private readonly TaskItem _parent;   
+        private readonly TaskItem _sub;
+        private readonly TaskItem _parent;
         private readonly TaskManager _manager;
         private bool _initialized;
         public ObservableCollection<SubTaskEntry> Entries { get; } = new();
@@ -22,7 +22,7 @@ namespace WpfApp2.Views
             _parent = parent;
 
             TitleText.Text = $"Розбити: {sub.Name}";
-            InfoText.Text = $"{sub.EstimatedHours} ч. • дедлайн: {sub.Deadline:dd.MM.yyyy}";
+            InfoText.Text  = $"{sub.EstimatedHours:F1} ч. • дедлайн: {sub.Deadline:dd.MM.yyyy}";
 
             SubList.ItemsSource = Entries;
             PartsLabel.Text = "2";
@@ -51,8 +51,8 @@ namespace WpfApp2.Views
                 Entries.Add(new SubTaskEntry
                 {
                     Index = i + 1,
-                    Name = $"{_sub.Name} ({i + 1}/{parts})",
-                    Hours = hours.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                    Name  = $"{_sub.Name} ({i + 1}/{parts})",
+                    Hours = hours.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)
                 });
             }
         }
@@ -60,27 +60,40 @@ namespace WpfApp2.Views
         private void Confirm_Click(object sender, RoutedEventArgs e)
         {
             var baseDate = _sub.Deadline ?? DateTime.Today;
+            int subCount = Entries.Count;
+            int splitPartId = _sub.Id;
 
+            // 1. Видаляємо стару частину
             _parent.SubTasks.Remove(_sub);
             _manager.DeleteSubTask(_sub);
 
-            for (int i = 0; i < Entries.Count; i++)
+            // 2. Додаємо нові підчастини
+            for (int i = 0; i < subCount; i++)
             {
                 var entry = Entries[i];
                 var newSub = new TaskItem
                 {
-                    Name = entry.Name,
-                    TaskType = _sub.TaskType,
-                    Priority = _sub.Priority,
-                    ParentId = _parent.Id,
-                    Deadline = baseDate.AddDays(i),
+                    Name          = entry.Name,
+                    TaskType      = _sub.TaskType,
+                    Priority      = _sub.Priority,
+                    ParentId      = _parent.Id,
+                    Deadline      = baseDate.AddDays(i),
                     EstimatedHours = entry.ParsedHours,
-                    IsChecked = false
+                    IsChecked     = false
                 };
                 _manager.AddSubTask(_parent, newSub);
             }
 
-            _parent.EstimatedHours = _parent.SubTasks.Sum(s => s.EstimatedHours);
+            // 3. Зсуваємо дедлайни наступних сиблінгів
+            //    (ті що йшли після розбитої частини)
+            PlannerService.ShiftSiblingDeadlines(_parent, splitPartId, subCount);
+
+            // 4. Зберігаємо оновлені дедлайни сиблінгів у БД
+            foreach (var sibling in _parent.SubTasks)
+                _manager.UpdateTask(sibling);
+
+            // 5. Перераховуємо години батька
+            _parent.EstimatedHours = Math.Round(_parent.SubTasks.Sum(s => s.EstimatedHours), 1);
             _manager.UpdateTask(_parent);
 
             DialogResult = true;
