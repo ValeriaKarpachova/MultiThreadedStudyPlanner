@@ -2,7 +2,68 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Редагування частин" Height="520" Width="620"
-        ResizeMode="NoResize" WindowStartupLocation="CenterOwner">
+        ResizeMode="NoResize" WindowStartupLocation="CenterOwner" FontSize="14">
+
+    <Window.Resources>
+        <Style x:Key="PurpleButton" TargetType="Button">
+            <Setter Property="Background"      Value="#534AB7"/>
+            <Setter Property="Foreground"      Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding"         Value="14,8"/>
+            <Setter Property="FontSize"        Value="13"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#6C5FC7"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#3C3489"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="OutlineButton" TargetType="Button">
+            <Setter Property="Background"      Value="White"/>
+            <Setter Property="Foreground"      Value="#534AB7"/>
+            <Setter Property="BorderBrush"     Value="#534AB7"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding"         Value="14,8"/>
+            <Setter Property="FontSize"        Value="13"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#F0EEFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
 
     <Grid Margin="16">
         <Grid.RowDefinitions>
@@ -27,10 +88,14 @@
                 <ColumnDefinition Width="105"/>
                 <ColumnDefinition Width="130"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="1" Text="Назва"       FontSize="11" Foreground="Gray"/>
-            <TextBlock Grid.Column="2" Text="Годин"       FontSize="11" Foreground="Gray"/>
-            <TextBlock Grid.Column="3" Text="Дедлайн"    FontSize="11" Foreground="Gray"/>
-            <TextBlock Grid.Column="4" Text="Дії"         FontSize="11" Foreground="Gray"/>
+            <TextBlock Grid.Column="1" Text="Назва"
+                       FontSize="13" FontWeight="SemiBold" Foreground="#534AB7"/>
+            <TextBlock Grid.Column="2" Text="Годин"
+                       FontSize="13" FontWeight="SemiBold" Foreground="#534AB7"/>
+            <TextBlock Grid.Column="3" Text="Дедлайн"
+                       FontSize="13" FontWeight="SemiBold" Foreground="#534AB7"/>
+            <TextBlock Grid.Column="4" Text="Дії"
+                       FontSize="13" FontWeight="SemiBold" Foreground="#534AB7"/>
         </Grid>
 
         <!-- Список частин -->
@@ -61,30 +126,25 @@
                             <DatePicker Grid.Column="3" Margin="0,0,6,0"
                                         SelectedDate="{Binding Deadline}"/>
 
-                            <!-- Кнопки дій для кожної частини -->
                             <StackPanel Grid.Column="4" Orientation="Horizontal"
                                         VerticalAlignment="Center">
                                 <Button Style="{StaticResource ImageButtonStyle}" Margin="2"
-                                        Width="30" Height="30"
-                                        Cursor="Hand"
+                                        Width="30" Height="30" Cursor="Hand"
                                         ToolTip="Видалити"
                                         Click="DeletePart_Click"
                                         Tag="{Binding}">
-                                    <Image Source="/Images/delete.png" 
-                                       Width="25" Height="25"
-                                       Stretch="Uniform"/>
+                                    <Image Source="/Images/delete.png"
+                                           Width="25" Height="25" Stretch="Uniform"/>
                                 </Button>
 
                                 <Button Style="{StaticResource ImageButtonStyle}" Margin="2"
-                                    Width="30" Height="30"
-                                    Cursor="Hand"
-                                    ToolTip="Розбити частину"
-                                    Click="SplitPart_Click"
-                                    Visibility="{Binding IsSplit, Converter={StaticResource InverseBoolToVisibility}}"
-                                    Tag="{Binding}">            
-                                    <Image Source="/Images/split.png" 
-                                        Width="25" Height="25"
-                                        Stretch="Uniform"/>
+                                        Width="30" Height="30" Cursor="Hand"
+                                        ToolTip="Розбити частину"
+                                        Click="SplitPart_Click"
+                                        Visibility="{Binding IsSplit, Converter={StaticResource InverseBoolToVisibility}}"
+                                        Tag="{Binding}">
+                                    <Image Source="/Images/split.png"
+                                           Width="25" Height="25" Stretch="Uniform"/>
                                 </Button>
                             </StackPanel>
                         </Grid>
@@ -96,9 +156,11 @@
         <!-- Кнопки збереження -->
         <StackPanel Grid.Row="3" Orientation="Horizontal"
                     HorizontalAlignment="Right">
-            <Button Content="Зберегти" Width="100" Margin="0,0,10,0"
+            <Button Content="Зберегти" Width="110" Margin="0,0,10,0"
+                    Style="{StaticResource PurpleButton}"
                     Click="Save_Click"/>
-            <Button Content="Скасувати" Width="100"
+            <Button Content="Скасувати" Width="110"
+                    Style="{StaticResource OutlineButton}"
                     Click="Cancel_Click"/>
         </StackPanel>
     </Grid>

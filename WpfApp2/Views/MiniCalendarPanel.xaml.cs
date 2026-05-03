@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
@@ -22,7 +22,7 @@ namespace WpfApp2.Views
                 Grid.Children.Add(new TextBlock
                 {
                     Text = h,
-                    FontSize = 9,
+                    FontSize = 8,
                     TextAlignment = TextAlignment.Center,
                     Foreground = Brushes.Gray,
                     FontWeight = FontWeights.Bold
@@ -47,14 +47,22 @@ namespace WpfApp2.Views
                     Background = isToday
                         ? new SolidColorBrush(Color.FromRgb(83, 74, 183))
                         : Brushes.Transparent,
+                    Width = 22,
+                    Height = 18,
+                    HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                    VerticalAlignment = System.Windows.VerticalAlignment.Center,
                     Child = new TextBlock
                     {
                         Text = d.ToString(),
-                        FontSize = 10,
+                        FontSize = 9,
                         TextAlignment = TextAlignment.Center,
-                        Foreground = isToday ? Brushes.White
-                                      : isWe ? new SolidColorBrush(Color.FromRgb(224, 112, 112))
-                                      : Brushes.Black
+                        HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                        VerticalAlignment = System.Windows.VerticalAlignment.Center,
+                        Foreground = isToday
+                            ? Brushes.White
+                            : isWe
+                                ? new SolidColorBrush(Color.FromRgb(224, 112, 112))
+                                : new SolidColorBrush(Color.FromRgb(44, 44, 42))
                     }
                 };
                 Grid.Children.Add(tb);

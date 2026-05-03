@@ -1,10 +1,7 @@
-﻿using MaterialDesignThemes.Wpf;
 using System;
-using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Threading;
 using WpfApp2.Services;
 
@@ -16,7 +13,6 @@ namespace WpfApp2.Views
         private readonly BackgroundProcessor _backgroundProcessor;
         private readonly DispatcherTimer _workdayTimer = new() { Interval = TimeSpan.FromMinutes(1) };
         private DateTime _workdayStart;
-        private bool _darkTheme = false;
         private Button? _activeNav;
 
         public static TrayService? Tray { get; private set; }
@@ -34,7 +30,7 @@ namespace WpfApp2.Views
             _backgroundProcessor = new BackgroundProcessor(manager);
             _backgroundProcessor.Start();
 
-            Navigate(new TasksView(manager, TaskViewMode.Home), BtnHome);
+            Navigate(new TasksView(manager, TaskViewMode.Home), BtnHome, "Головна");
 
             Tray = new TrayService();
             Tray.OpenRequested += () =>
@@ -47,45 +43,92 @@ namespace WpfApp2.Views
             _workdayStart = DateTime.Now;
             _workdayTimer.Tick += WorkdayTimer_Tick;
             _workdayTimer.Start();
-
         }
 
         private void AddTask_Click(object sender, RoutedEventArgs e)
         {
             var window = new AddTaskWindow();
-
             if (window.ShowDialog() == true)
-            {
                 manager.AddTask(window.NewTask);
-            }
         }
 
         private void Home_Click(object s, RoutedEventArgs e) =>
-            Navigate(new TasksView(manager, TaskViewMode.Home), BtnHome);
-        private void Today_Click(object s, RoutedEventArgs e) =>
-            Navigate(new TasksView(manager, TaskViewMode.Today), BtnToday);
-        private void Completed_Click(object s, RoutedEventArgs e) =>
-            Navigate(new TasksView(manager, TaskViewMode.Completed), BtnCompleted);
-        private void Subjects_Click(object s, RoutedEventArgs e) =>
-            Navigate(new SubjectsView(manager), BtnSubjects);
-        private void Calendar_Click(object s, RoutedEventArgs e) =>
-            Navigate(new CalendarView(manager), BtnCalendar);
-        private void Statistics_Click(object s, RoutedEventArgs e) =>
-            Navigate(new StatisticsView(manager), BtnStatistics);
+            Navigate(new TasksView(manager, TaskViewMode.Home), BtnHome, "Головна");
 
-
-        public enum TaskViewMode
+        private void Today_Click(object s, RoutedEventArgs e)
         {
-            Home,
-            Today,
-            Completed
+            // Перевіряємо перевантаження ТІЛЬКИ при переході на "Сьогодні"
+            CheckTodayOverloadWarning();
+            Navigate(new TasksView(manager, TaskViewMode.Today), BtnToday, "Сьогодні");
         }
+
+        private void Completed_Click(object s, RoutedEventArgs e) =>
+            Navigate(new TasksView(manager, TaskViewMode.Completed), BtnCompleted, "Виконані");
+
+        private void Subjects_Click(object s, RoutedEventArgs e) =>
+            Navigate(new SubjectsView(manager), BtnSubjects, "Предмети");
+
+        private void Calendar_Click(object s, RoutedEventArgs e) =>
+            Navigate(new CalendarView(manager), BtnCalendar, "Календар");
+
+        private void Statistics_Click(object s, RoutedEventArgs e) =>
+            Navigate(new StatisticsView(manager), BtnStatistics, "Статистика");
+
+        /// <summary>
+        /// Показує попередження про перевантаження при переході на "Сьогодні".
+        /// Викликається ЛИШЕ при навігації, НЕ при редагуванні.
+        /// </summary>
+        private void CheckTodayOverloadWarning()
+        {
+            var today = DateTime.Today;
+            var tasks = manager.Tasks.ToList();
+
+            double totalHours = 0;
+            var todayTasks = new System.Collections.Generic.List<TaskItem>();
+
+            foreach (var t in tasks)
+            {
+                if (t.IsCompleted) continue;
+
+                if (t.IsSplit)
+                {
+                    var subs = t.SubTasks
+                        .Where(s => s.Deadline.HasValue &&
+                                    s.Deadline.Value.Date == today &&
+                                    !s.IsChecked)
+                        .ToList();
+                    if (subs.Any())
+                    {
+                        totalHours += subs.Sum(s => s.EstimatedHours);
+                        todayTasks.Add(t);
+                    }
+                }
+                else
+                {
+                    if (t.Deadline.HasValue && t.Deadline.Value.Date == today)
+                    {
+                        totalHours += t.EstimatedHours * (1 - t.Progress / 100.0);
+                        todayTasks.Add(t);
+                    }
+                }
+            }
+
+            if (todayTasks.Any() && totalHours > PlannerService.DailyLimit)
+            {
+                var dialog = new OverloadDialog(todayTasks, totalHours, manager)
+                {
+                    Owner = this
+                };
+                dialog.ShowDialog();
+            }
+        }
+
+        public enum TaskViewMode { Home, Today, Completed }
 
         private void WorkdayTimer_Tick(object? s, EventArgs e)
         {
             var elapsed = DateTime.Now - _workdayStart;
-            if (elapsed.TotalHours >= 6 &&
-                (int)elapsed.TotalMinutes % 30 == 0) // нагадувати кожні 30хв після 6год
+            if (elapsed.TotalHours >= 6 && (int)elapsed.TotalMinutes % 30 == 0)
             {
                 Tray?.Notify("⚠️ Перевантаження",
                     $"Ви працюєте вже {(int)elapsed.TotalHours} год. Зробіть тривалу перерву!",
@@ -93,34 +136,19 @@ namespace WpfApp2.Views
             }
         }
 
-        private void Theme_Click(object s, RoutedEventArgs e)
-        {
-            _darkTheme = !_darkTheme;
-            BtnTheme.Content = _darkTheme ? "☀️  Світла тема" : "🌙  Темна тема";
-            var bg = _darkTheme ? "#1E1E2E" : "#FFFFFF";
-            var fg = _darkTheme ? "#CDD6F4" : "#000000";
-            var col = _darkTheme ? MaterialDesignThemes.Wpf.BaseTheme.Dark
-                                 : MaterialDesignThemes.Wpf.BaseTheme.Light;
-
-            var paletteHelper = new MaterialDesignThemes.Wpf.PaletteHelper();
-            var theme = paletteHelper.GetTheme();
-            theme.SetBaseTheme(col);
-            paletteHelper.SetTheme(theme);
-        }
-
-        private void Navigate(object content, Button btn)
+        private void Navigate(object content, Button btn, string title = "")
         {
             MainContent.Content = content;
             if (_activeNav != null) _activeNav.Tag = null;
             _activeNav = btn;
             btn.Tag = "active";
+            if (PageTitle != null) PageTitle.Text = title;
         }
 
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
-            e.Cancel = true;   
-            Hide();             
-            Tray?.Notify("Student Planner", "Програма згорнута в трей");
+            e.Cancel = true;
+            Hide();
         }
     }
 }

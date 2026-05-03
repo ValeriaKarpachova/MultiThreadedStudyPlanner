@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
 using WpfApp2.Services;
 
@@ -20,7 +19,17 @@ namespace WpfApp2.Views
             InitializeComponent();
             _manager = manager;
             _month = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+
+            _manager.TasksChanged += OnTasksChanged;
+
+            Unloaded += (_, __) => _manager.TasksChanged -= OnTasksChanged;
+
             Render();
+        }
+
+        private void OnTasksChanged()
+        {
+            Dispatcher.InvokeAsync(Render);
         }
 
         private void Render()
@@ -39,13 +48,25 @@ namespace WpfApp2.Views
             for (int d = 1; d <= daysInMonth; d++)
             {
                 var date = new DateTime(_month.Year, _month.Month, d);
-                var dayTasks = tasks.Where(t =>
-                    t.Deadline.HasValue &&
-                    t.Deadline.Value.Date == date).ToList();
+
+                var dayTasks = new List<TaskItem>();
+                foreach (var t in tasks)
+                {
+                    if (t.IsSplit)
+                    {
+                        var subs = t.SubTasks
+                            .Where(s => s.Deadline.HasValue && s.Deadline.Value.Date == date)
+                            .ToList();
+                        dayTasks.AddRange(subs);
+                    }
+                    else if (t.Deadline.HasValue && t.Deadline.Value.Date == date)
+                    {
+                        dayTasks.Add(t);
+                    }
+                }
 
                 bool isToday = date == today;
-                bool isWeekend = date.DayOfWeek == DayOfWeek.Saturday ||
-                                  date.DayOfWeek == DayOfWeek.Sunday;
+                bool isWeekend = date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
 
                 var border = new Border
                 {
@@ -63,19 +84,49 @@ namespace WpfApp2.Views
 
                 var panel = new StackPanel();
 
-                var dayNum = new TextBlock
-                {
-                    Text = d.ToString(),
-                    FontWeight = FontWeights.Bold,
-                    FontSize = 13,
-                    Foreground = isWeekend
-                        ? new SolidColorBrush(Color.FromRgb(224, 112, 112))
-                        : isToday
-                            ? new SolidColorBrush(Color.FromRgb(83, 74, 183))
-                            : Brushes.Black
-                };
+                var header = new Grid();
+                header.ColumnDefinitions.Add(new ColumnDefinition
+                { Width = new GridLength(1, GridUnitType.Star) });
+                header.ColumnDefinitions.Add(new ColumnDefinition
+                { Width = GridLength.Auto });
 
-                // ← виправлення: System.Windows.HorizontalAlignment замість просто HorizontalAlignment
+                FrameworkElement dayElement;
+                if (isToday)
+                {
+                    dayElement = new Border
+                    {
+                        Width = 24,
+                        Height = 24,
+                        CornerRadius = new CornerRadius(12),
+                        Background = new SolidColorBrush(Color.FromRgb(83, 74, 183)),
+                        HorizontalAlignment = System.Windows.HorizontalAlignment.Left,
+                        Child = new TextBlock
+                        {
+                            Text = d.ToString(),
+                            FontWeight = FontWeights.Bold,
+                            FontSize = 13,
+                            Foreground = Brushes.White,
+                            HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                            VerticalAlignment = System.Windows.VerticalAlignment.Center,
+                            TextAlignment = TextAlignment.Center
+                        }
+                    };
+                }
+                else
+                {
+                    dayElement = new TextBlock
+                    {
+                        Text = d.ToString(),
+                        FontWeight = FontWeights.Bold,
+                        FontSize = 13,
+                        Foreground = isWeekend
+                            ? new SolidColorBrush(Color.FromRgb(224, 112, 112))
+                            : Brushes.Black
+                    };
+                }
+
+                Grid.SetColumn(dayElement, 0);
+
                 var addBtn = new Button
                 {
                     Content = "+",
@@ -90,15 +141,9 @@ namespace WpfApp2.Views
                     Tag = date
                 };
                 addBtn.Click += AddTaskOnDate_Click;
-
-                var header = new Grid();
-                header.ColumnDefinitions.Add(new ColumnDefinition
-                { Width = new GridLength(1, GridUnitType.Star) });
-                header.ColumnDefinitions.Add(new ColumnDefinition
-                { Width = GridLength.Auto });
-                Grid.SetColumn(dayNum, 0);
                 Grid.SetColumn(addBtn, 1);
-                header.Children.Add(dayNum);
+
+                header.Children.Add(dayElement);
                 header.Children.Add(addBtn);
                 panel.Children.Add(header);
 
@@ -113,12 +158,33 @@ namespace WpfApp2.Views
                     var expandBtn = new Button
                     {
                         Content = $"▼ ще {dayTasks.Count - maxShow}",
-                        FontSize = 9,
-                        Padding = new Thickness(2, 1, 2, 1),
-                        Background = Brushes.Transparent,
+                        FontSize = 10,
+                        Padding = new Thickness(4, 2, 4, 2),
+                        Foreground = Brushes.White,
+                        Background = new SolidColorBrush(Color.FromRgb(83, 74, 183)),
                         BorderThickness = new Thickness(0),
+                        Cursor = System.Windows.Input.Cursors.Hand,
+                        Margin = new Thickness(0, 2, 0, 0),
                         Tag = (date, dayTasks, panel, maxShow)
                     };
+
+                    var expandTemplate = new ControlTemplate(typeof(Button));
+                    var expandBorder = new FrameworkElementFactory(typeof(Border));
+                    expandBorder.SetValue(Border.BackgroundProperty,
+                        new TemplateBindingExtension(Button.BackgroundProperty));
+                    expandBorder.SetValue(Border.CornerRadiusProperty, new CornerRadius(4));
+                    expandBorder.SetValue(Border.PaddingProperty,
+                        new TemplateBindingExtension(Button.PaddingProperty));
+                    var expandCp = new FrameworkElementFactory(typeof(ContentPresenter));
+                    expandCp.SetValue(ContentPresenter.HorizontalAlignmentProperty,
+                        System.Windows.HorizontalAlignment.Center);
+                    expandBorder.AppendChild(expandCp);
+                    expandTemplate.VisualTree = expandBorder;
+
+                    var expandStyle = new System.Windows.Style(typeof(Button));
+                    expandStyle.Setters.Add(new Setter(Button.TemplateProperty, expandTemplate));
+                    expandBtn.Style = expandStyle;
+
                     expandBtn.Click += ExpandDay_Click;
                     panel.Children.Add(expandBtn);
                 }
@@ -171,7 +237,6 @@ namespace WpfApp2.Views
             if (dlg.ShowDialog() == true)
             {
                 _manager.AddTask(dlg.NewTask);
-                Render();
             }
         }
 

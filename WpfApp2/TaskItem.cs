@@ -61,7 +61,6 @@ public class TaskItem : INotifyPropertyChanged
             {
                 isChecked = value;
                 OnPropertyChanged(nameof(IsChecked));
-                // Для обычных заданий отмечаем как выполненные/невыполненные
                 if (!IsSplit)
                 {
                     OnPropertyChanged(nameof(Progress));

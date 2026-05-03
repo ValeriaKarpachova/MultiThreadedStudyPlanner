@@ -67,7 +67,6 @@ namespace WpfApp2.Services
                         total += t.EstimatedHours * (1 - t.Progress / 100.0);
                 }
             }
-
             return total;
         }
 
@@ -77,22 +76,22 @@ namespace WpfApp2.Services
             foreach (var task in tasks)
             {
                 double urgency = 0;
-
                 if (task.Deadline.HasValue)
                 {
                     double daysLeft = (task.Deadline.Value - DateTime.Now).TotalDays;
                     urgency = daysLeft <= 0
-                        ? 1.0 + Math.Abs(daysLeft)
-                        : 1.0 / (daysLeft + 1.0);
+                        ? 100.0 + Math.Abs(daysLeft) * 10
+                        : 100.0 / (daysLeft + 1.0);
                 }
 
-                double completion = (100.0 - task.Progress) / 100.0;
                 double importance = TaskTypeService.GetImportance(task.TaskType);
+                double completion = (100.0 - task.Progress) / 100.0;
 
+                // importance тепер домінує через множник ×10 (діапазон 20–100)
                 task.Priority = (int)(
-                    0.3 * urgency +
-                    0.2 * importance +
-                    0.5 * completion) * 100;
+                    urgency * 0.4
+                    + importance * 10.0    // ← ключова зміна: ×10 замість просто importance
+                    + completion * 20.0);
             }
         }
 

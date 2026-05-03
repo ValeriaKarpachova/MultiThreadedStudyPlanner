@@ -1,31 +1,42 @@
 <Window x:Class="WpfApp2.Views.AddSubjectDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Новий предмет" Height="220" Width="320"
-        ResizeMode="NoResize" WindowStartupLocation="CenterOwner">
-    <StackPanel Margin="16">
-        <TextBlock Text="Назва предмету" Margin="0,0,0,4"/>
-        <TextBox x:Name="NameBox" Margin="0,0,0,12"/>
+        Title="Новий предмет" Height="280" Width="380"
+        ResizeMode="NoResize" WindowStartupLocation="CenterOwner"
+        FontSize="14">
+    <StackPanel Margin="20">
+        <TextBlock Text="Назва предмету" Margin="0,0,0,6"
+                   FontSize="14" FontWeight="SemiBold"/>
+        <TextBox x:Name="NameBox" Margin="0,0,0,16"
+                 FontSize="14" Padding="6,4"/>
 
-        <TextBlock Text="Колір" Margin="0,0,0,6"/>
-        <StackPanel Orientation="Horizontal" x:Name="ColorPicker" Margin="0,0,0,16">
-            <RadioButton Tag="#534AB7" GroupName="col" IsChecked="True">
-                <Border Width="20" Height="20" Background="#534AB7" CornerRadius="3"/>
+        <TextBlock Text="Колір" Margin="0,0,0,8"
+                   FontSize="14" FontWeight="SemiBold"/>
+        <StackPanel Orientation="Horizontal" x:Name="ColorPicker" Margin="0,0,0,20">
+            <RadioButton Tag="#534AB7" GroupName="col" IsChecked="True"
+                         Click="ColorRadio_Click" Margin="0,0,8,0">
+                <Border Width="28" Height="28" Background="#534AB7" CornerRadius="6"/>
             </RadioButton>
-            <RadioButton Tag="#22A06B" GroupName="col" Margin="6,0,0,0">
-                <Border Width="20" Height="20" Background="#22A06B" CornerRadius="3"/>
+            <RadioButton Tag="#22A06B" GroupName="col"
+                         Click="ColorRadio_Click" Margin="0,0,8,0">
+                <Border Width="28" Height="28" Background="#22A06B" CornerRadius="6"/>
             </RadioButton>
-            <RadioButton Tag="#E2483D" GroupName="col" Margin="6,0,0,0">
-                <Border Width="20" Height="20" Background="#E2483D" CornerRadius="3"/>
+            <RadioButton Tag="#E2483D" GroupName="col"
+                         Click="ColorRadio_Click" Margin="0,0,8,0">
+                <Border Width="28" Height="28" Background="#E2483D" CornerRadius="6"/>
             </RadioButton>
-            <RadioButton Tag="#0065FF" GroupName="col" Margin="6,0,0,0">
-                <Border Width="20" Height="20" Background="#0065FF" CornerRadius="3"/>
+            <RadioButton Tag="#0065FF" GroupName="col"
+                         Click="ColorRadio_Click" Margin="0,0,8,0">
+                <Border Width="28" Height="28" Background="#0065FF" CornerRadius="6"/>
             </RadioButton>
-            <RadioButton Tag="#FF8C00" GroupName="col" Margin="6,0,0,0">
-                <Border Width="20" Height="20" Background="#FF8C00" CornerRadius="3"/>
+            <RadioButton Tag="#FF8C00" GroupName="col"
+                         Click="ColorRadio_Click">
+                <Border Width="28" Height="28" Background="#FF8C00" CornerRadius="6"/>
             </RadioButton>
         </StackPanel>
 
-        <Button Content="Створити" Click="Create_Click"/>
+        <Button Content="Створити" Click="Create_Click"
+                Style="{StaticResource PrimaryButton}"
+                FontSize="14" Padding="0,10" Height="40"/>
     </StackPanel>
 </Window>

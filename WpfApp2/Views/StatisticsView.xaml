@@ -4,20 +4,28 @@
     xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="14">
+        <StackPanel Margin="16">
 
-            <TextBlock Text="📊 Статистика" FontSize="22"
-                       FontWeight="Bold" Margin="0,0,0,14"/>
+            <TextBlock Text="📊 Статистика продуктивності"
+                       FontSize="22" FontWeight="Bold" Margin="0,0,0,16"/>
 
-            <!-- Картки KPI -->
-            <UniformGrid Rows="1" Columns="4" Margin="0,0,0,20">
-                <Border x:Name="CardTotal"     Style="{StaticResource KpiCard}"/>
-                <Border x:Name="CardDone"      Style="{StaticResource KpiCard}"/>
-                <Border x:Name="CardOverdue"   Style="{StaticResource KpiCard}"/>
+            <!-- ─── KPI картки (рядок 1) ─── -->
+            <UniformGrid Rows="1" Columns="4" Margin="0,0,0,12">
+                <Border x:Name="CardTotal"        Style="{StaticResource KpiCard}"/>
+                <Border x:Name="CardDone"         Style="{StaticResource KpiCard}"/>
+                <Border x:Name="CardOverdue"      Style="{StaticResource KpiCard}"/>
                 <Border x:Name="CardProductivity" Style="{StaticResource KpiCard}"/>
             </UniformGrid>
 
-            <!-- Рядок: стовпчаста + кругова -->
+            <!-- ─── KPI картки (рядок 2) ─── -->
+            <UniformGrid Rows="1" Columns="4" Margin="0,0,0,20">
+                <Border x:Name="CardTotalHours"   Style="{StaticResource KpiCard}"/>
+                <Border x:Name="CardDoneHours"    Style="{StaticResource KpiCard}"/>
+                <Border x:Name="CardAvgProgress"  Style="{StaticResource KpiCard}"/>
+                <Border x:Name="CardTodayHours"   Style="{StaticResource KpiCard}"/>
+            </UniformGrid>
+
+            <!-- ─── Рядок 1: стовпчаста + кругова ─── -->
             <Grid Margin="0,0,0,20">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1.6*"/>
@@ -26,27 +34,37 @@
                 <StackPanel Grid.Column="0" Margin="0,0,10,0">
                     <TextBlock Text="Задачі за типом" FontWeight="SemiBold"
                                FontSize="14" Margin="0,0,0,6"/>
-                    <lvc:CartesianChart x:Name="ByTypeChart" Height="220"/>
+                    <lvc:CartesianChart x:Name="ByTypeChart" Height="260" Margin="0,0,0,8"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1">
                     <TextBlock Text="Статус задач" FontWeight="SemiBold"
                                FontSize="14" Margin="0,0,0,6"/>
                     <lvc:PieChart x:Name="StatusPie" Height="220"/>
+                    <ContentControl x:Name="LegendPanel" Margin="0,8,0,0"/>
                 </StackPanel>
             </Grid>
 
-            <!-- Лінійний: прогрес по дням -->
-            <TextBlock Text="Навантаження по тижням (год)" FontWeight="SemiBold"
-                       FontSize="14" Margin="0,0,0,6"/>
+            <!-- ─── Навантаження по тижнях ─── -->
+            <TextBlock Text="Навантаження по тижнях (год)"
+                       FontWeight="SemiBold" FontSize="14" Margin="0,0,0,6"/>
             <lvc:CartesianChart x:Name="WeekLoadChart" Height="200" Margin="0,0,0,20"/>
 
-            <TextBlock Text="Топ задач за обсягом (год)" FontWeight="SemiBold"
-           FontSize="14" Margin="0,0,0,6"/>
-            <lvc:CartesianChart x:Name="TopTasksChart" Height="220" Margin="0,0,0,20"/>
+            <!-- ─── Топ задач — власна WPF легенда зверху ─── -->
+            <TextBlock Text="Топ задач за обсягом (год)"
+                       FontWeight="SemiBold" FontSize="14" Margin="0,0,0,4"/>
+            <!-- WPF легенда (читабельна) -->
+            <ContentControl x:Name="TopTasksLegend" Margin="0,0,0,4"/>
+            <lvc:CartesianChart x:Name="TopTasksChart" Height="240" Margin="0,0,0,20"/>
 
-            <TextBlock Text="Статистика по предметах" FontWeight="SemiBold"
-           FontSize="14" Margin="0,0,0,6"/>
-            <lvc:CartesianChart x:Name="SubjectChart" Height="260"/>
+            <!-- ─── Дедлайни: майбутні 14 днів ─── -->
+            <TextBlock Text="Навантаження на найближчі 14 днів (год)"
+                       FontWeight="SemiBold" FontSize="14" Margin="0,0,0,6"/>
+            <lvc:CartesianChart x:Name="DeadlineChart" Height="180" Margin="0,0,0,20"/>
+
+            <!-- ─── Статистика по предметах ─── -->
+            <TextBlock Text="Статистика по предметах"
+                       FontWeight="SemiBold" FontSize="14" Margin="0,0,0,6"/>
+            <ContentControl x:Name="SubjectAccordion" Margin="0,0,0,16"/>
 
         </StackPanel>
     </ScrollViewer>

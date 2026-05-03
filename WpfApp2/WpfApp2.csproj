@@ -10,10 +10,23 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Images\add.png" />
+    <None Remove="Images\app_logo.png" />
     <None Remove="Images\arrow.png" />
+    <None Remove="Images\calendar.png" />
     <None Remove="Images\delete.png" />
+    <None Remove="Images\done.png" />
     <None Remove="Images\edit.png" />
+    <None Remove="Images\home.png" />
+    <None Remove="Images\notes.png" />
+    <None Remove="Images\pause.png" />
+    <None Remove="Images\play.png" />
+    <None Remove="Images\reset.png" />
+    <None Remove="Images\skip.png" />
     <None Remove="Images\split.png" />
+    <None Remove="Images\stats.png" />
+    <None Remove="Images\subjects.png" />
+    <None Remove="Images\today.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,10 +37,23 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Images\add.png" />
+    <Resource Include="Images\app_logo.png" />
     <Resource Include="Images\arrow.png" />
+    <Resource Include="Images\calendar.png" />
     <Resource Include="Images\delete.png" />
+    <Resource Include="Images\done.png" />
     <Resource Include="Images\edit.png" />
+    <Resource Include="Images\home.png" />
+    <Resource Include="Images\notes.png" />
+    <Resource Include="Images\pause.png" />
+    <Resource Include="Images\play.png" />
+    <Resource Include="Images\reset.png" />
+    <Resource Include="Images\skip.png" />
     <Resource Include="Images\split.png" />
+    <Resource Include="Images\stats.png" />
+    <Resource Include="Images\subjects.png" />
+    <Resource Include="Images\today.png" />
   </ItemGroup>
 
 </Project>

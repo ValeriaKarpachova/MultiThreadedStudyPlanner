@@ -14,30 +14,22 @@ namespace WpfApp2.Services
         public string Action     { get; set; } = "";   // ADD / UPDATE / DELETE
         public int     TaskId    { get; set; }
         public string  TaskName  { get; set; } = "";
-        public string  Detail    { get; set; } = "";   // що саме змінилось
+        public string  Detail    { get; set; } = "";
 
         public override string ToString() =>
             $"{Timestamp:yyyy-MM-dd HH:mm:ss} | {Action,-6} | #{TaskId} \"{TaskName}\" | {Detail}";
     }
 
     // ─── Власний бінарний формат (.spd – Student Planner Data) ──────────────────
-    //  Header:  4 bytes magic "SPD\x01"  +  4 bytes record count
-    //  Record:  [int32 id][int32 parentId(or -1)][int32 priority]
-    //           [double estimatedHours]
-    //           [byte isChecked]
-    //           [int64 deadlineTicks (or -1)]
-    //           [str name][str description][str taskType]
-    //  String:  [int32 byteLen][UTF-8 bytes]
-
     public static class DataStorageService
     {
         // ── Шляхи ──────────────────────────────────────────────────────────────
         private static readonly string DataDir =
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data");
 
-        private static readonly string DataFile   = Path.Combine(DataDir, "tasks.spd");
-        private static readonly string CacheFile  = Path.Combine(DataDir, "tasks.cache");
-        private static readonly string JournalFile= Path.Combine(DataDir, "changelog.log");
+        private static readonly string DataFile    = Path.Combine(DataDir, "tasks.spd");
+        private static readonly string CacheFile   = Path.Combine(DataDir, "tasks.cache");
+        private static readonly string JournalFile = Path.Combine(DataDir, "changelog.log");
 
         private static readonly byte[] Magic = { (byte)'S', (byte)'P', (byte)'D', 0x01 };
 
@@ -50,6 +42,9 @@ namespace WpfApp2.Services
         // ── Журнал змін ────────────────────────────────────────────────────────
         private static readonly List<ChangeLogEntry> _journal = new();
         public static IReadOnlyList<ChangeLogEntry> Journal => _journal.AsReadOnly();
+
+        // ВИПРАВЛЕННЯ: окремий об'єкт-лок для синхронного запису
+        private static readonly object _journalFileLock = new object();
 
         // ═══════════════════════════════════════════════════════════════════════
         //  PUBLIC API
@@ -86,7 +81,6 @@ namespace WpfApp2.Services
         {
             EnsureDirectory();
 
-            // 1. Перевіряємо гарячий кеш
             _lock.EnterReadLock();
             try
             {
@@ -98,7 +92,6 @@ namespace WpfApp2.Services
             }
             finally { _lock.ExitReadLock(); }
 
-            // 2. Перевіряємо файловий кеш
             if (File.Exists(CacheFile) && File.Exists(DataFile))
             {
                 var cacheDate = File.GetLastWriteTime(CacheFile);
@@ -117,7 +110,6 @@ namespace WpfApp2.Services
                 }
             }
 
-            // 3. Читаємо основний файл
             if (!File.Exists(DataFile))
             {
                 AppLogger.Log(LogLevel.Warning, "DataStorage", "Файл даних не знайдено, повертаємо порожній список");
@@ -142,9 +134,9 @@ namespace WpfApp2.Services
         }
 
         // ── Журнал змін ────────────────────────────────────────────────────────
-        // ── Окремий лок для журналу змін ──────────────────────────────────────
-        private static readonly SemaphoreSlim _journalLock = new(1, 1);
-
+        // ВИПРАВЛЕННЯ: синхронний запис у файл через lock замість async/semaphore
+        // (попередній код мав проблему: async Task всередині fire-and-forget міг
+        //  конкурувати із завершенням додатку і втрачати записи)
         public static void LogChange(string action, TaskItem task, string detail = "")
         {
             var entry = new ChangeLogEntry
@@ -158,37 +150,35 @@ namespace WpfApp2.Services
 
             lock (_journal) { _journal.Add(entry); }
 
-            // Асинхронний запис — не блокує потік, але файл захищений семафором
-            _ = WriteJournalAsync(entry);
+            // Синхронний запис у окремому ThreadPool-потоці
+            // (не блокує UI, але файл завжди дописується)
+            System.Threading.ThreadPool.QueueUserWorkItem(_ =>
+            {
+                try
+                {
+                    EnsureDirectory();
+                    lock (_journalFileLock)
+                    {
+                        File.AppendAllText(
+                            JournalFile,
+                            entry.ToString() + Environment.NewLine,
+                            Encoding.UTF8);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Log(LogLevel.Warning, "ChangeLog",
+                        $"Не вдалося записати в журнал: {ex.Message}");
+                }
+            });
 
             AppLogger.Log(LogLevel.Debug, "ChangeLog", entry.ToString());
-        }
-
-        private static async System.Threading.Tasks.Task WriteJournalAsync(ChangeLogEntry entry)
-        {
-            await _journalLock.WaitAsync();
-            try
-            {
-                EnsureDirectory();
-                await System.IO.File.AppendAllTextAsync(
-                    JournalFile,
-                    entry + Environment.NewLine,
-                    Encoding.UTF8);
-            }
-            catch (Exception ex)
-            {
-                // Журнал не повинен ламати основну логіку
-                AppLogger.Log(LogLevel.Warning, "ChangeLog",
-                    $"Не вдалося записати в журнал: {ex.Message}");
-            }
-            finally { _journalLock.Release(); }
         }
 
         public static List<ChangeLogEntry> LoadJournalFromFile()
         {
             if (!File.Exists(JournalFile)) return new();
             var lines = File.ReadAllLines(JournalFile, Encoding.UTF8);
-            // Парсимо рядки назад у об'єкти для перегляду
             var result = new List<ChangeLogEntry>();
             foreach (var line in lines)
             {
@@ -199,6 +189,11 @@ namespace WpfApp2.Services
                 {
                     Timestamp = ts,
                     Action    = parts[1].Trim(),
+                    TaskId    = parts.Length > 2 && int.TryParse(
+                        parts[2].Trim().TrimStart('#').Split(' ')[0], out var id) ? id : 0,
+                    TaskName  = parts.Length > 2
+                        ? parts[2].Trim().Replace($"#{result.Count}", "").Trim()
+                        : "",
                     Detail    = parts.Length > 3 ? parts[3].Trim() : ""
                 });
             }
@@ -211,7 +206,6 @@ namespace WpfApp2.Services
 
         private static void WriteSpd(List<TaskItem> tasks, string path)
         {
-            // Плоский список: спочатку кореневі, потім підзадачі
             var flat = tasks
                 .SelectMany(t => new[] { t }.Concat(t.SubTasks))
                 .ToList();
@@ -256,20 +250,19 @@ namespace WpfApp2.Services
                     Priority       = 0,
                     EstimatedHours = 0
                 };
-                int parentRaw  = br.ReadInt32();
-                t.ParentId     = parentRaw == -1 ? null : parentRaw;
-                t.Priority     = br.ReadInt32();
+                int parentRaw    = br.ReadInt32();
+                t.ParentId       = parentRaw == -1 ? null : parentRaw;
+                t.Priority       = br.ReadInt32();
                 t.EstimatedHours = br.ReadDouble();
-                t.IsChecked    = br.ReadBoolean();
-                long ticks     = br.ReadInt64();
-                t.Deadline     = ticks == -1 ? null : new DateTime(ticks);
-                t.Name         = ReadString(br);
-                t.Description  = ReadString(br);
-                t.TaskType     = ReadString(br);
+                t.IsChecked      = br.ReadBoolean();
+                long ticks       = br.ReadInt64();
+                t.Deadline       = ticks == -1 ? null : new DateTime(ticks);
+                t.Name           = ReadString(br);
+                t.Description    = ReadString(br);
+                t.TaskType       = ReadString(br);
                 flat.Add(t);
             }
 
-            // Збираємо дерево
             var roots    = flat.Where(t => t.ParentId == null).ToList();
             var children = flat.Where(t => t.ParentId != null).ToList();
             foreach (var child in children)
@@ -289,12 +282,11 @@ namespace WpfApp2.Services
 
         private static string ReadString(BinaryReader br)
         {
-            int len = br.ReadInt32();
+            int len   = br.ReadInt32();
             var bytes = br.ReadBytes(len);
             return Encoding.UTF8.GetString(bytes);
         }
 
-        // ── Файловий кеш (простий CSV-маніфест для швидкої перевірки) ──────────
         private static void WriteCacheManifest(List<TaskItem> tasks)
         {
             var sb = new StringBuilder();
@@ -308,9 +300,7 @@ namespace WpfApp2.Services
 
         private static List<TaskItem>? ReadCacheManifest()
         {
-            // Маніфест лише для швидкої перевірки актуальності;
-            // якщо він свіжіший за .spd — повертаємо null і читаємо .spd
-            return null; // навмисно: кеш-маніфест використовується лише як sentinel
+            return null;
         }
     }
 }

@@ -46,9 +46,10 @@
             <ComboBoxItem Content="Практика"/>
         </ComboBox>
 
-        <Button Content="Додати"
-                Margin="0,10"
-                Click="Add_Click"/>
+        <Button Content="Додати завдання"
+        Margin="0,10" Click="Add_Click"
+        Style="{StaticResource PrimaryButton}"
+        FontSize="14" Padding="0,10"/>
 
     </StackPanel>
 </Window>

@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using System.Windows;
-using System.Windows.Controls;
 
 namespace WpfApp2.Views
 {
@@ -11,7 +10,14 @@ namespace WpfApp2.Views
 
         public AddSubjectDialog() => InitializeComponent();
 
-        private void Create_Click(object s, RoutedEventArgs e)
+        private void ColorRadio_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.RadioButton rb &&
+                rb.Tag?.ToString() is string color)
+                SubjectColor = color;
+        }
+
+        private void Create_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(NameBox.Text))
             {

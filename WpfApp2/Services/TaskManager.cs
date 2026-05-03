@@ -16,6 +16,9 @@ namespace WpfApp2.Services
 
         public bool IsEditing { get; set; }
 
+        // ← подія для підписників (CalendarView) про будь-яку зміну задач
+        public event Action? TasksChanged;
+
         public TaskManager(DatabaseService db)
         {
             _db = db;
@@ -40,15 +43,14 @@ namespace WpfApp2.Services
         public void AddTask(TaskItem task)
         {
             _db.AddTask(task);
+            DataStorageService.LogChange("ADD", task, $"Дедлайн: {task.Deadline:yyyy-MM-dd}, Тип: {task.TaskType}");
 
             Application.Current.Dispatcher.Invoke(() =>
             {
                 Tasks.Add(task);
                 Subscribe(task);
                 Recalculate();
-
-                if (IsToday(task.Deadline))
-                    CheckOverload();
+                TasksChanged?.Invoke();
             });
 
             AppLogger.Info("TaskManager", $"Додано задачу \"{task.Name}\" (#{task.Id})");
@@ -57,13 +59,13 @@ namespace WpfApp2.Services
         public void UpdateTask(TaskItem task)
         {
             _db.UpdateTask(task);
+            DataStorageService.LogChange("UPDATE", task, $"Дедлайн: {task.Deadline:yyyy-MM-dd}, Прогрес: {task.Progress}%");
 
             Application.Current.Dispatcher.Invoke(() =>
             {
                 Recalculate();
-
-                if (IsToday(task.Deadline))
-                    CheckOverload();
+                // НЕ викликаємо CheckOverload тут — тільки при навігації на "Сьогодні"
+                TasksChanged?.Invoke();
             });
         }
 
@@ -77,10 +79,12 @@ namespace WpfApp2.Services
         public void DeleteTask(TaskItem task)
         {
             AppLogger.Warning("TaskManager", $"Видалення задачі \"{task.Name}\" (#{task.Id})");
+            DataStorageService.LogChange("DELETE", task, $"Видалено задачу з {task.SubTasks.Count} підзадачами");
 
             Application.Current.Dispatcher.Invoke(() =>
             {
                 Tasks.Remove(task);
+                TasksChanged?.Invoke();
             });
 
             Task.Run(() => _db.DeleteTask(task.Id));
@@ -101,37 +105,10 @@ namespace WpfApp2.Services
             finally { _isRecalculating = false; }
         }
 
-        private void CheckOverload()
-        {
-            var today = DateTime.Today;
-            var tomorrow = today.AddDays(1);
-
-            var todayTasks = Tasks
-                .Where(t => t.Deadline.HasValue
-                         && t.Deadline.Value >= today
-                         && t.Deadline.Value < tomorrow
-                         && !t.IsCompleted
-                         && t.ParentId == null)
-                .ToList();
-
-            if (!todayTasks.Any()) return;
-
-            double hours = todayTasks.Sum(t => t.EstimatedHours * (1 - t.Progress / 100.0));
-            if (hours <= PlannerService.DailyLimit) return;
-
-            AppLogger.Warning("TaskManager",
-                $"Перевантаження! {hours:F1} год > ліміту {PlannerService.DailyLimit} год");
-
-            var dialog = new Views.OverloadDialog(todayTasks, hours, this)
-            {
-                Owner = Application.Current.MainWindow
-            };
-            dialog.ShowDialog();
-        }
-
         public void DeleteSubTask(TaskItem sub)
         {
             AppLogger.Debug("TaskManager", $"Видалення підзадачі \"{sub.Name}\" (#{sub.Id})");
+            DataStorageService.LogChange("DELETE", sub, "Видалено підзадачу");
             Task.Run(() => _db.DeleteSubTask(sub.Id));
         }
 
@@ -162,6 +139,7 @@ namespace WpfApp2.Services
         {
             sub.ParentId = parent.Id;
             _db.AddTask(sub);
+            DataStorageService.LogChange("ADD", sub, $"Підзадача для #{parent.Id} \"{parent.Name}\"");
 
             Application.Current.Dispatcher.Invoke(() =>
             {
@@ -181,6 +159,7 @@ namespace WpfApp2.Services
                                 {
                                     _db.UpdateTask(sub);
                                     _db.UpdateTask(parent);
+                                    DataStorageService.LogChange("UPDATE", sub, "Зміна статусу підзадачі");
                                 }
                                 catch (Exception ex)
                                 {
@@ -226,9 +205,21 @@ namespace WpfApp2.Services
             {
                 if (IsEditing || _isRecalculating) return;
 
+                if (e.PropertyName == nameof(TaskItem.Deadline))
+                {
+                    Application.Current.Dispatcher.InvokeAsync(() =>
+                        TasksChanged?.Invoke());
+                }
+
                 Task.Run(() =>
                 {
-                    try { _db.UpdateTask(task); }
+                    try
+                    {
+                        _db.UpdateTask(task);
+                        // Логуємо зміни властивостей
+                        DataStorageService.LogChange("UPDATE", task,
+                            $"Змінено поле: {e.PropertyName}");
+                    }
                     catch (Exception ex)
                     {
                         AppLogger.Error("TaskManager", $"Помилка збереження задачі #{task.Id}", ex);

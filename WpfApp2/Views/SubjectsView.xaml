@@ -1,27 +1,32 @@
 <UserControl x:Class="WpfApp2.Views.SubjectsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    
-    <DockPanel Margin="14">
-        <!-- Заголовок + кнопка -->
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
-            <TextBlock Text="📚 Предмети" FontSize="22" FontWeight="Bold"
+    <DockPanel Margin="20">
+
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,16">
+            <TextBlock Text="Предмети" FontSize="24" FontWeight="Bold"
                        VerticalAlignment="Center"/>
-            <Button Content="+ Додати предмет" Margin="14,0,0,0"
-                    Padding="10,4" Click="AddSubject_Click"/>
+            <Button Margin="16,0,0,0" Padding="12,6"
+                    Style="{StaticResource PrimaryButton}"
+                    Click="AddSubject_Click">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="/Images/add.png" Width="15" Height="15"
+                           Margin="0,0,6,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="Додати предмет" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
         </StackPanel>
 
-        <!-- Список предметів -->
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <ItemsControl x:Name="SubjectsList">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Margin="0,0,0,8" CornerRadius="8"
-                                BorderThickness="0,0,0,0"
-                                Background="#F8F8FF">
+                        <Border Margin="0,0,0,10" CornerRadius="10"
+                                Background="White"
+                                BorderBrush="#E0DEFF" BorderThickness="1">
                             <Expander>
                                 <Expander.Header>
-                                    <Grid>
+                                    <Grid Margin="0,4">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="8"/>
                                             <ColumnDefinition Width="*"/>
@@ -30,55 +35,92 @@
                                         <Border Grid.Column="0" Width="6"
                                                 Background="{Binding Color,
                                                     Converter={StaticResource StringToBrush}}"
-                                                CornerRadius="3" Margin="0,2,8,2"/>
+                                                CornerRadius="3" Margin="0,2,12,2"/>
                                         <TextBlock Grid.Column="1" Text="{Binding Name}"
-                                                   FontSize="15" FontWeight="SemiBold"
+                                                   FontSize="16" FontWeight="SemiBold"
                                                    VerticalAlignment="Center"/>
-                                        <Button Grid.Column="2" Content="🗑"
-                                                Background="Transparent" BorderThickness="0"
-                                                Padding="6,2" Click="DeleteSubject_Click"/>
+                                        <Button Grid.Column="2"
+                                                Style="{StaticResource ImageButtonStyle}"
+                                                Width="34" Height="34"
+                                                Click="DeleteSubject_Click"
+                                                ToolTip="Видалити предмет">
+                                            <Image Source="/Images/delete.png"
+                                                   Width="20" Height="20"/>
+                                        </Button>
                                     </Grid>
                                 </Expander.Header>
-                                <!-- Задачі предмету -->
-                                <ItemsControl x:Name="TasksOfSubject"
-                                              ItemsSource="{Binding Tasks}"
-                                              Margin="16,4,4,8">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Grid Margin="0,3">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
-                                                <CheckBox Grid.Column="0"
-                                                          IsChecked="{Binding IsChecked}"
-                                                          VerticalAlignment="Center"
-                                                          Margin="0,0,8,0"/>
-                                                <StackPanel Grid.Column="1">
-                                                    <TextBlock Text="{Binding Name}"
-                                                               FontSize="13"/>
-                                                    <TextBlock
-                                                        Text="{Binding Deadline,
-                                                            StringFormat=Дедлайн: {0:dd.MM.yyyy}}"
-                                                        FontSize="11" Foreground="Gray"/>
-                                                </StackPanel>
-                                                <TextBlock Grid.Column="2"
-                                                           Text="{Binding EstimatedHours,
-                                                               StringFormat={}{0}ч}"
-                                                           FontSize="11" Foreground="Gray"
-                                                           Margin="6,0"
-                                                           VerticalAlignment="Center"/>
-                                                <Button Grid.Column="3" Content="✕"
-                                                        Foreground="#E2483D"
-                                                        Background="Transparent"
-                                                        BorderThickness="0" Padding="4,0"
-                                                        Click="DeleteTask_Click"/>
-                                            </Grid>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+
+                                <Border Background="{Binding Color,
+                                            Converter={StaticResource StringToBrushAlpha}}"
+                                        CornerRadius="0,0,8,8" Padding="12,8">
+                                    <ItemsControl ItemsSource="{Binding Tasks}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <!-- Tree-like indent with vertical line -->
+                                                <Grid Margin="0,4" MinHeight="36">
+                                                    <Grid.ColumnDefinitions>
+                                                        <!-- Tree connector -->
+                                                        <ColumnDefinition Width="32"/>
+                                                        <!-- Checkbox -->
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <!-- Name -->
+                                                        <ColumnDefinition Width="*"/>
+                                                        <!-- Hours -->
+                                                        <ColumnDefinition Width="70"/>
+                                                        <!-- Deadline -->
+                                                        <ColumnDefinition Width="90"/>
+                                                        <!-- Delete -->
+                                                        <ColumnDefinition Width="36"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <!-- Tree connector: horizontal line -->
+                                                    <Canvas Grid.Column="0">
+                                                        <Line X1="16" Y1="0" X2="16" Y2="18"
+                                                              Stroke="#CCCCCC" StrokeThickness="1.5"/>
+                                                        <Line X1="16" Y1="18" X2="32" Y2="18"
+                                                              Stroke="#CCCCCC" StrokeThickness="1.5"/>
+                                                    </Canvas>
+
+                                                    <CheckBox Grid.Column="1"
+                                                              IsChecked="{Binding IsChecked}"
+                                                              VerticalAlignment="Center"
+                                                              Margin="0,0,8,0"/>
+
+                                                    <TextBlock Grid.Column="2"
+                                                               Text="{Binding Name}"
+                                                               FontSize="14"
+                                                               VerticalAlignment="Center"/>
+
+                                                    <!-- Години з "г." -->
+                                                    <TextBlock Grid.Column="3"
+                                                               FontSize="13"
+                                                               Foreground="#555"
+                                                               TextAlignment="Center"
+                                                               VerticalAlignment="Center">
+                                                        <Run Text="{Binding EstimatedHours, StringFormat={}{0:F1}}"/><Run Text=" г."/>
+                                                    </TextBlock>
+
+                                                    <TextBlock Grid.Column="4"
+                                                               Text="{Binding Deadline,
+                                                                   StringFormat=до {0:dd.MM}}"
+                                                               FontSize="13"
+                                                               Foreground="#555"
+                                                               TextAlignment="Center"
+                                                               VerticalAlignment="Center"/>
+
+                                                    <Button Grid.Column="5"
+                                                            Style="{StaticResource ImageButtonStyle}"
+                                                            Width="30" Height="30"
+                                                            Click="DeleteTask_Click"
+                                                            ToolTip="Видалити завдання">
+                                                        <Image Source="/Images/delete.png"
+                                                               Width="18" Height="18"/>
+                                                    </Button>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Border>
                             </Expander>
                         </Border>
                     </DataTemplate>

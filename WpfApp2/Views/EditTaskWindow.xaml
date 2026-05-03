@@ -46,9 +46,10 @@
             <ComboBoxItem Content="Практика"/>
         </ComboBox>
 
-        <Button Content="Зберегти"
-                Margin="0,10"
-                Click="Edit_Click"/>
+        <Button Content="Зберегти зміни"
+        Margin="0,10" Click="Edit_Click"
+        Style="{StaticResource PrimaryButton}"
+        FontSize="14" Padding="0,10"/>
 
     </StackPanel>
 </Window>
