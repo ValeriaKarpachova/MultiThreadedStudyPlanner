@@ -16,14 +16,13 @@ namespace WpfApp2
             InitializeComponent();
             NewTask = task ?? new TaskItem();
 
-            // Заповнюємо списки годин (00–23) і хвилин (00, 05, 10 ... 55)
             for (int h = 0; h <= 23; h++)
                 HourBox.Items.Add(h.ToString("D2"));
 
             for (int m = 0; m <= 55; m += 5)
                 MinuteBox.Items.Add(m.ToString("D2"));
 
-            HourBox.SelectedIndex = 9;  // 09:00 за замовчуванням
+            HourBox.SelectedIndex = 9; 
             MinuteBox.SelectedIndex = 0;
 
             var subjects = _subjectSvc.GetAll();
@@ -45,7 +44,6 @@ namespace WpfApp2
                     if ((string)item.Content == task.TaskType)
                     { TypeBox.SelectedItem = item; break; }
 
-                // Відновлюємо час якщо він був задан
                 if (task.DeadlineTime.HasValue)
                 {
                     TimeEnabledCheck.IsChecked = true;
@@ -54,11 +52,9 @@ namespace WpfApp2
                 }
             }
 
-            // Початковий стан: поля часу відключені
             UpdateTimeState();
         }
 
-        // Для перетягування вікна
         private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
@@ -105,7 +101,6 @@ namespace WpfApp2
             NewTask.TaskType = sel == "Без типу" || string.IsNullOrWhiteSpace(sel)
                 ? null : sel;
 
-            // Час здачі
             if (TimeEnabledCheck.IsChecked == true &&
                 HourBox.SelectedItem != null && MinuteBox.SelectedItem != null)
             {

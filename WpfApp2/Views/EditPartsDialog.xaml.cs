@@ -35,9 +35,6 @@ namespace WpfApp2.Views
             set { _deadline = value; Notify(nameof(Deadline)); }
         }
 
-        // Підзадачі самі по собі ніколи не є "розбитими" —
-        // але властивість потрібна для XAML-біндингу кнопки "Розбити частину".
-        // Завжди false — кнопка буде видима (InverseBoolToVisibility → Visible).
         public bool IsSplit => false;
 
         public double ParsedHours =>
@@ -158,7 +155,6 @@ namespace WpfApp2.Views
         private void Cancel_Click(object sender, RoutedEventArgs e) =>
             DialogResult = false;
 
-        // Для перетягування вікна
         private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)

@@ -29,7 +29,6 @@ namespace WpfApp2.Services
             ";
             cmd.ExecuteNonQuery();
 
-            // Виконуємо міграцію тільки один раз
             if (!_migrationDone)
             {
                 TryAddColumn(c, "Tasks", "SubjectId", "INTEGER");
@@ -62,10 +61,7 @@ namespace WpfApp2.Services
                 alterCmd.CommandText = $"ALTER TABLE {table} ADD COLUMN {col} {type}";
                 alterCmd.ExecuteNonQuery();
             }
-            catch
-            {
-                // Ігноруємо помилки (наприклад, якщо таблиці не існує)
-            }
+            catch {  }
         }
 
         public List<Subject> GetAll()

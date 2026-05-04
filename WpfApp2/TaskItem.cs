@@ -8,7 +8,7 @@ public class TaskItem : INotifyPropertyChanged
     private string? name;
     private string? description;
     private DateTime? deadline;
-    private TimeSpan? deadlineTime;   // null = час не вказано
+    private TimeSpan? deadlineTime;  
     private string? taskType;
     private int priority;
     private double estimatedHours;
@@ -30,7 +30,6 @@ public class TaskItem : INotifyPropertyChanged
         set { description = value; OnPropertyChanged(nameof(Description)); }
     }
 
-    /// <summary>Дата дедлайну (без часу).</summary>
     public DateTime? Deadline
     {
         get => deadline;
@@ -44,10 +43,6 @@ public class TaskItem : INotifyPropertyChanged
         }
     }
 
-    /// <summary>
-    /// Необов'язковий час здачі. Якщо null — час не вказано,
-    /// дедлайн вважається кінцем дня (23:59:59).
-    /// </summary>
     public TimeSpan? DeadlineTime
     {
         get => deadlineTime;
@@ -62,10 +57,6 @@ public class TaskItem : INotifyPropertyChanged
         }
     }
 
-    /// <summary>
-    /// Точний момент дедлайну: дата + час (або 23:59:59 якщо час не задано).
-    /// Якщо дата не вказана — null.
-    /// </summary>
     public DateTime? DeadlineDateTime
     {
         get
@@ -73,11 +64,10 @@ public class TaskItem : INotifyPropertyChanged
             if (!Deadline.HasValue) return null;
             return DeadlineTime.HasValue
                 ? Deadline.Value.Add(DeadlineTime.Value)
-                : Deadline.Value.AddDays(1).AddSeconds(-1); // кінець дня
+                : Deadline.Value.AddDays(1).AddSeconds(-1); 
         }
     }
 
-    /// <summary>Рядок для відображення: "дд.мм.рррр ГГ:хх" або "дд.мм.рррр".</summary>
     public string DeadlineDisplay
     {
         get
@@ -89,13 +79,9 @@ public class TaskItem : INotifyPropertyChanged
         }
     }
 
-    /// <summary>Рядок часу для UI: "ГГ:хх" або "" якщо не вказано.</summary>
     public string DeadlineTimeDisplay =>
         DeadlineTime.HasValue ? DeadlineTime.Value.ToString(@"hh\:mm") : "";
 
-    /// <summary>
-    /// Рядок для серіалізації в БД: "ГГ:хх" або пусто.
-    /// </summary>
     public string DeadlineTimeString
     {
         get => DeadlineTime.HasValue
@@ -174,12 +160,6 @@ public class TaskItem : INotifyPropertyChanged
 
     public bool IsCompleted => Progress >= 100;
 
-    /// <summary>
-    /// Завдання прострочено якщо:
-    ///  - не виконано, І
-    ///  - точний момент дедлайну (дата + час) вже минув.
-    /// Завдання "на сьогодні, час ще не настав" — НЕ прострочено.
-    /// </summary>
     public bool IsOverdue
     {
         get

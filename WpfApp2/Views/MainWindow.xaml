@@ -12,14 +12,13 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- LEFT PANEL -->
+        <!-- Ліва панель -->
         <Border Grid.Column="0"
                 Background="#EEF0F8"
                 BorderBrush="#D8DCF0"
                 BorderThickness="0,0,1,0">
             <DockPanel>
 
-                <!-- Заголовок -->
                 <Border DockPanel.Dock="Top" Background="#534AB7" Padding="16,14">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="/Images/app_logo.png" Width="28" Height="28"
@@ -89,7 +88,6 @@
 
                     <Separator Margin="0,6"/>
 
-                    <!-- Pomodoro label: centered, Ukrainian only, with icon -->
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center"
                                 Margin="0,2,0,4">
@@ -98,14 +96,12 @@
 
                     <Separator Margin="0,4"/>
 
-                    <!-- Mini calendar label + stretched widget -->
                     <StackPanel Orientation="Horizontal" Margin="4,4,0,2"/>
                     <views:MiniCalendarPanel HorizontalAlignment="Stretch" Margin="0,0,0,4"/>
 
                     <Separator Margin="0,4"/>
                 </StackPanel>
 
-                <!-- Нотатки -->
                 <Border Margin="6,4,6,8">
                     <views:NotesPanel/>
                 </Border>
@@ -113,7 +109,7 @@
             </DockPanel>
         </Border>
 
-        <!-- RIGHT SIDE -->
+        <!-- Права сторона -->
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="56"/>

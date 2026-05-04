@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Height="170">
     <StackPanel>
-        <!-- Navigation row -->
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,2">
             <Button Content="◀" Width="22" Height="18" FontSize="9"
                     Padding="0" Click="Prev_Click"
@@ -18,7 +17,6 @@
                     BorderThickness="0" Cursor="Hand"/>
         </StackPanel>
 
-        <!-- Calendar grid: no fixed width → stretches -->
         <UniformGrid x:Name="Grid" Rows="7" Columns="7"
                      HorizontalAlignment="Stretch"
                      Height="148"

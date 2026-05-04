@@ -8,7 +8,6 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Навігація по місяцях -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
             <Button x:Name="PrevButton" Content="◀" Width="32" Click="PrevMonth_Click"
                     Background="#534AB7" Foreground="White" BorderThickness="0"
@@ -69,7 +68,6 @@
             </Button>
         </StackPanel>
 
-        <!-- Дні тижня -->
         <UniformGrid Grid.Row="1" Rows="1" Columns="7" Margin="0,0,0,4">
             <TextBlock Text="Пн" TextAlignment="Center" FontWeight="Bold" Foreground="Gray"/>
             <TextBlock Text="Вт" TextAlignment="Center" FontWeight="Bold" Foreground="Gray"/>
@@ -80,7 +78,6 @@
             <TextBlock Text="Нд" TextAlignment="Center" FontWeight="Bold" Foreground="#E07070"/>
         </UniformGrid>
 
-        <!-- Сітка днів -->
         <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <UniformGrid x:Name="CalGrid" Rows="6" Columns="7"/>
         </ScrollViewer>

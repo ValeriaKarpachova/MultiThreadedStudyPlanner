@@ -7,7 +7,6 @@ using System.Threading;
 
 namespace WpfApp2.Services
 {
-    // ─── Журнал змін ────────────────────────────────────────────────────────────
     public class ChangeLogEntry
     {
         public DateTime Timestamp { get; set; }
@@ -20,7 +19,6 @@ namespace WpfApp2.Services
             $"{Timestamp:yyyy-MM-dd HH:mm:ss} | {Action,-6} | #{TaskId} \"{TaskName}\" | {Detail}";
     }
 
-    // ─── Власний бінарний формат (.spd) ─────────────────────────────────────────
     public static class DataStorageService
     {
         private static readonly string DataDir =
@@ -30,7 +28,6 @@ namespace WpfApp2.Services
         private static readonly string CacheFile   = Path.Combine(DataDir, "tasks.cache");
         private static readonly string JournalFile = Path.Combine(DataDir, "changelog.log");
 
-        // Версія формату: 0x02 — додано поле DeadlineTime
         private static readonly byte[] Magic = { (byte)'S', (byte)'P', (byte)'D', 0x02 };
 
         private static List<TaskItem>? _cache;
@@ -42,10 +39,6 @@ namespace WpfApp2.Services
         public static IReadOnlyList<ChangeLogEntry> Journal => _journal.AsReadOnly();
 
         private static readonly object _journalFileLock = new object();
-
-        // ═══════════════════════════════════════════════════════════════════════
-        //  PUBLIC API
-        // ═══════════════════════════════════════════════════════════════════════
 
         public static void EnsureDirectory()
         {
@@ -187,11 +180,6 @@ namespace WpfApp2.Services
             return result;
         }
 
-        // ═══════════════════════════════════════════════════════════════════════
-        //  PRIVATE – бінарний формат SPD v2
-        //  Новий запис задачі: ... + DeadlineTimeTicks (long, -1 = не вказано)
-        // ═══════════════════════════════════════════════════════════════════════
-
         private static void WriteSpd(List<TaskItem> tasks, string path)
         {
             var flat = tasks
@@ -212,7 +200,6 @@ namespace WpfApp2.Services
                 bw.Write(t.EstimatedHours);
                 bw.Write(t.IsChecked);
                 bw.Write(t.Deadline.HasValue ? t.Deadline.Value.Ticks : -1L);
-                // Нове поле v2: час дедлайну у тіках (-1 = не вказано)
                 bw.Write(t.DeadlineTime.HasValue ? t.DeadlineTime.Value.Ticks : -1L);
                 WriteString(bw, t.Name        ?? "");
                 WriteString(bw, t.Description ?? "");
@@ -226,11 +213,7 @@ namespace WpfApp2.Services
             using var br = new BinaryReader(fs, Encoding.UTF8);
 
             var magic = br.ReadBytes(4);
-
-            // Визначаємо версію формату за 4-м байтом magic
             bool isV2 = magic[3] == 0x02;
-            // v1 (0x01) — без DeadlineTime, v2 (0x02) — з DeadlineTime
-            // Якщо magic не відповідає жодній відомій версії — кидаємо виняток
             if (magic[0] != 'S' || magic[1] != 'P' || magic[2] != 'D' ||
                 (magic[3] != 0x01 && magic[3] != 0x02))
                 throw new InvalidDataException("Невірний формат файлу SPD");
@@ -255,7 +238,6 @@ namespace WpfApp2.Services
                 long dateTicks   = br.ReadInt64();
                 t.Deadline       = dateTicks == -1 ? null : new DateTime(dateTicks);
 
-                // Читаємо час тільки якщо файл формату v2
                 if (isV2)
                 {
                     long timeTicks = br.ReadInt64();

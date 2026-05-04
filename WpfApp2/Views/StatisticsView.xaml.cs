@@ -157,22 +157,20 @@ namespace WpfApp2.Views
                 bool done = t.IsCompleted;
 
                 var barColor = done
-                    ? Color.FromRgb(34, 160, 107)   // зелений для виконаних
-                    : Color.FromRgb(83, 74, 183);   // фіолетовий для активних
+                    ? Color.FromRgb(34, 160, 107)  
+                    : Color.FromRgb(83, 74, 183);   
 
                 var row = new Grid { Margin = new Thickness(0, 0, 0, 6) };
-                row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(32) });   // іконка/медаль
-                row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // назва + бар
-                row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(60) });   // години
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(32) });  
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); 
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(60) });   
 
-                // Іконка замість текстової медалі
                 FrameworkElement rankIcon;
 
                 if (i < 3)
                 {
-                    // Використовуємо PNG іконки для топ-3 з повним ім'ям простору
                     string medalImage = i == 0 ? "gold_medal.png" : (i == 1 ? "silver_medal.png" : "bronze_medal.png");
-                    var img = new System.Windows.Controls.Image  // ← явне вказання простору імен
+                    var img = new System.Windows.Controls.Image  
                     {
                         Source = LoadImageFromResources(medalImage),
                         Width = 24,
@@ -183,7 +181,6 @@ namespace WpfApp2.Views
                 }
                 else
                 {
-                    // Для інших - просто номер
                     rankIcon = new TextBlock
                     {
                         Text = $"#{i + 1}",
@@ -272,9 +269,6 @@ namespace WpfApp2.Views
             TopTasksList.Content = panel;
         }
 
-        /// <summary>
-        /// Допоміжний метод для завантаження зображень з ресурсів
-        /// </summary>
         private static System.Windows.Media.ImageSource LoadImageFromResources(string fileName)
         {
             try
@@ -284,7 +278,6 @@ namespace WpfApp2.Views
             }
             catch
             {
-                // Якщо файл не знайдено, повертаємо пусту заглушку
                 return null;
             }
         }
@@ -431,7 +424,5 @@ namespace WpfApp2.Views
             }
             SubjectAccordion.Content = panel;
         }
-
-        
     }
 }

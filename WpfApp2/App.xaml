@@ -20,7 +20,7 @@
 
             <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
 
-            <!-- NavButton — розтягнуті на всю ширину панелі -->
+            <!-- NavButton —-->
             <Style x:Key="NavButton" TargetType="Button">
                 <Setter Property="Background"                 Value="Transparent"/>
                 <Setter Property="BorderThickness"            Value="0"/>
@@ -135,7 +135,7 @@
                 </Setter>
             </Style>
 
-            <!-- DataGridRowNoHighlight — виділення як у NavButton -->
+            <!-- DataGridRowNoHighlight —-->
             <Style x:Key="DataGridRowNoHighlight" TargetType="DataGridRow">
                 <Setter Property="Background"      Value="Transparent"/>
                 <Setter Property="BorderThickness" Value="0"/>
@@ -168,24 +168,21 @@
                                 </SelectiveScrollingGrid>
                             </Border>
                             <ControlTemplate.Triggers>
-                                <!-- Hover — легке підсвічування як у NavButton -->
                                 <Trigger Property="IsMouseOver" Value="True">
                                     <Setter TargetName="DGR_Border" Property="Background" Value="#1A534AB7"/>
                                 </Trigger>
-                                <!-- Виділений рядок -->
                                 <Trigger Property="IsSelected" Value="True">
                                     <Setter TargetName="DGR_Border" Property="Background" Value="#2A534AB7"/>
                                     <Setter Property="Foreground" Value="#534AB7"/>
                                     <Setter Property="FontWeight" Value="SemiBold"/>
                                 </Trigger>
-
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
             </Style>
 
-            <!-- DataGridCell — без власного виділення -->
+            <!-- DataGridCell —-->
             <Style TargetType="DataGridCell">
                 <Setter Property="BorderThickness"  Value="0"/>
                 <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
@@ -200,7 +197,6 @@
                     </Setter.Value>
                 </Setter>
             </Style>
-
         </ResourceDictionary>
     </Application.Resources>
 </Application>

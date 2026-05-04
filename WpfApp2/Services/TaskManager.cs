@@ -16,8 +16,6 @@ namespace WpfApp2.Services
         private readonly SubjectService _subjectSvc = new();
 
         public bool IsEditing { get; set; }
-
-        // ← подія для підписників (CalendarView) про будь-яку зміну задач
         public event Action? TasksChanged;
 
         public TaskManager(DatabaseService db)
@@ -214,7 +212,6 @@ namespace WpfApp2.Services
                     try
                     {
                         _db.UpdateTask(task);
-                        // Логуємо зміни властивостей
                         DataStorageService.LogChange("UPDATE", task,
                             $"Змінено поле: {e.PropertyName}");
                     }

@@ -25,7 +25,6 @@
                 <Border x:Name="CardTodayHours"  Style="{StaticResource KpiCard}"/>
             </UniformGrid>
 
-            <!-- Стовпчаста + кругова -->
             <Grid Margin="0,0,0,20">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1.6*"/>
@@ -54,7 +53,7 @@
                        FontWeight="SemiBold"  Margin="0,0,0,4"/>
             <ContentControl x:Name="TopTasksList" Margin="0,0,0,20"/>
 
-            <!-- Дедлайни: 14 днів -->
+            <!-- 14 днів -->
             <TextBlock Text="Навантаження на найближчі 14 днів (год)"
                        FontWeight="SemiBold"  Margin="0,0,0,6"/>
             <lvc:CartesianChart x:Name="DeadlineChart" Height="180" Margin="0,0,0,20"/>

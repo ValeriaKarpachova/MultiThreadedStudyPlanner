@@ -106,8 +106,6 @@
         </DataGrid.RowStyle>
 
         <DataGrid.Columns>
-
-            <!-- Стрілка -->
             <DataGridTemplateColumn Width="50">
                 <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate>
@@ -195,7 +193,7 @@
                 </DataGridTemplateColumn.CellTemplate>
             </DataGridTemplateColumn>
 
-            <!-- Дедлайн (дата + час) -->
+            <!-- Дедлайн -->
             <DataGridTemplateColumn Header="Дедлайн" Width="1.2*">
                 <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate>
@@ -215,7 +213,7 @@
                                     </Style>
                                 </TextBlock.Style>
                             </TextBlock>
-                            <!-- Час (тільки якщо вказано) -->
+                            <!-- Час -->
                             <TextBlock FontSize="11" HorizontalAlignment="Center"
                                        TextAlignment="Center">
                                 <TextBlock.Style>
@@ -360,6 +358,5 @@
                 </ItemsControl>
             </DataTemplate>
         </DataGrid.RowDetailsTemplate>
-
     </DataGrid>
 </UserControl>

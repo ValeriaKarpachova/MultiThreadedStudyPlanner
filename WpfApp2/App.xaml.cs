@@ -18,7 +18,7 @@ namespace WpfApp2
 
             DataStorageService.EnsureDirectory();
 
-            // ── Глобальні обробники помилок ───────────────────────────────────
+            // Глобальні обробники помилок
             DispatcherUnhandledException += OnDispatcherException;
             AppDomain.CurrentDomain.UnhandledException += OnDomainException;
             TaskScheduler.UnobservedTaskException += OnTaskException;
@@ -32,7 +32,7 @@ namespace WpfApp2
             base.OnExit(e);
         }
 
-        // ── UI-потік ──────────────────────────────────────────────────────────
+        // UI-потік
         private void OnDispatcherException(object sender, DispatcherUnhandledExceptionEventArgs ex)
         {
             AppLogger.Fatal("App", "Необроблений виняток у UI-потоці", ex.Exception);
@@ -40,7 +40,7 @@ namespace WpfApp2
             ex.Handled = true;
         }
 
-        // ── Фоновий потік ─────────────────────────────────────────────────────
+        // Фоновий потік
         private void OnDomainException(object sender, UnhandledExceptionEventArgs ex)
         {
             var exception = ex.ExceptionObject as Exception;
@@ -48,7 +48,7 @@ namespace WpfApp2
             Debug.WriteLine($"Fatal Exception: {exception?.Message}");
         }
 
-        // ── Task виняток ──────────────────────────────────────────────────────
+        // Task виняток
         private void OnTaskException(object? sender, UnobservedTaskExceptionEventArgs ex)
         {
             AppLogger.Error("App", "Необроблений виняток у Task", ex.Exception);

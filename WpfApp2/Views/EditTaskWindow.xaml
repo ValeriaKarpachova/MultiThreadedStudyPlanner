@@ -12,8 +12,7 @@
 
     <Border Background="White" 
             CornerRadius="12" 
-            BorderThickness="0"
-            >
+            BorderThickness="0">
         
         <Border BorderBrush="#E0DEFF" 
                 BorderThickness="1" 

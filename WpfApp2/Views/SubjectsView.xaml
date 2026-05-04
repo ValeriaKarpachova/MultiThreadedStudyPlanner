@@ -56,24 +56,16 @@
                                     <ItemsControl ItemsSource="{Binding Tasks}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <!-- Tree-like indent with vertical line -->
                                                 <Grid Margin="0,4" MinHeight="36">
                                                     <Grid.ColumnDefinitions>
-                                                        <!-- Tree connector -->
                                                         <ColumnDefinition Width="32"/>
-                                                        <!-- Checkbox -->
                                                         <ColumnDefinition Width="Auto"/>
-                                                        <!-- Name -->
                                                         <ColumnDefinition Width="*"/>
-                                                        <!-- Hours -->
                                                         <ColumnDefinition Width="70"/>
-                                                        <!-- Deadline -->
                                                         <ColumnDefinition Width="90"/>
-                                                        <!-- Delete -->
                                                         <ColumnDefinition Width="36"/>
                                                     </Grid.ColumnDefinitions>
 
-                                                    <!-- Tree connector: horizontal line -->
                                                     <Canvas Grid.Column="0">
                                                         <Line X1="16" Y1="0" X2="16" Y2="18"
                                                               Stroke="#CCCCCC" StrokeThickness="1.5"/>
@@ -91,7 +83,6 @@
                                                                
                                                                VerticalAlignment="Center"/>
 
-                                                    <!-- Години з "г." -->
                                                     <TextBlock Grid.Column="3"
                                                                FontSize="13"
                                                                Foreground="#555"

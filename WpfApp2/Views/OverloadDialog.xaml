@@ -43,8 +43,7 @@
 
     <Border Background="White" 
             CornerRadius="12" 
-            BorderThickness="0"
-            >
+            BorderThickness="0">
         
         <Border BorderBrush="#E0DEFF" 
                 BorderThickness="1" 
@@ -59,7 +58,6 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- Заголовок -->
                 <Border Grid.Row="0" 
                         Background="#534AB7" 
                         CornerRadius="8,8,0,0" 
@@ -82,7 +80,6 @@
                     </Grid>
                 </Border>
 
-                <!-- Контент -->
                 <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,20,0,10" VerticalAlignment="Center">
                     <Image Source="/Images/warning.png"
                            Width="40" Height="40"

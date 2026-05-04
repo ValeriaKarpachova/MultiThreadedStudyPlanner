@@ -22,8 +22,6 @@ namespace WpfApp2.Services
 
             var total     = tasks.Count;
             var completed = tasks.Count(t => t.IsCompleted);
-
-            // Прострочено = точний момент дедлайну (дата + час) вже минув
             var overdue = tasks.Count(t => t.IsOverdue);
 
             var avgProgress   = total == 0 ? 0 : tasks.Average(t => t.Progress);

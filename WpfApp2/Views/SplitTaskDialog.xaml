@@ -6,8 +6,7 @@
         ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner"
         AllowsTransparency="True"
-        Background="Transparent"
-        >
+        Background="Transparent">
 
     <Window.Resources>
         <Style x:Key="PurpleButton" TargetType="Button">
@@ -39,6 +38,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
         <Style x:Key="OutlineButton" TargetType="Button">
             <Setter Property="Background"      Value="White"/>
             <Setter Property="Foreground"      Value="#534AB7"/>
@@ -72,8 +72,7 @@
 
     <Border Background="White" 
             CornerRadius="12" 
-            BorderThickness="0"
-            >
+            BorderThickness="0">
         
         <Border BorderBrush="#E0DEFF" 
                 BorderThickness="1" 
@@ -90,7 +89,6 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Шапка -->
                 <Border Grid.Row="0" 
                         Background="#534AB7" 
                         CornerRadius="8,8,0,0" 

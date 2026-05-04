@@ -55,23 +55,10 @@ namespace WpfApp2.Views
             TitleText.Text = $"Розбити: {sub.Name}";
             InfoText.Text = $"{sub.EstimatedHours:F1} ч. • дедлайн: {sub.Deadline:dd.MM.yyyy}";
 
-            SubTasksList.ItemsSource = Entries;  // ← SubTasksList (як в XAML)
+            SubTasksList.ItemsSource = Entries; 
             PartsLabel.Text = "2";
             _initialized = true;
             UpdateEntries(2);
-        }
-
-        // Для перетягування вікна
-        private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        }
-
-        private void Close_Click(object sender, RoutedEventArgs e)
-        {
-            DialogResult = false;
-            Close();
         }
 
         private void PartsSlider_ValueChanged(object sender,
@@ -107,11 +94,9 @@ namespace WpfApp2.Views
             int subCount = Entries.Count;
             int splitPartId = _sub.Id;
 
-            // 1. Видаляємо стару частину
             _parent.SubTasks.Remove(_sub);
             _manager.DeleteSubTask(_sub);
 
-            // 2. Додаємо нові підчастини
             for (int i = 0; i < subCount; i++)
             {
                 var entry = Entries[i];
@@ -128,14 +113,11 @@ namespace WpfApp2.Views
                 _manager.AddSubTask(_parent, newSub);
             }
 
-            // 3. Зсуваємо дедлайни наступних сиблінгів
             PlannerService.ShiftSiblingDeadlines(_parent, splitPartId, subCount);
 
-            // 4. Зберігаємо оновлені дедлайни сиблінгів у БД
             foreach (var sibling in _parent.SubTasks)
                 _manager.UpdateTask(sibling);
 
-            // 5. Перераховуємо години батька
             _parent.EstimatedHours = Math.Round(_parent.SubTasks.Sum(s => s.EstimatedHours), 1);
             _manager.UpdateTask(_parent);
 
@@ -144,5 +126,17 @@ namespace WpfApp2.Views
 
         private void Cancel_Click(object sender, RoutedEventArgs e) =>
             DialogResult = false;
+
+        private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed)
+                DragMove();
+        }
+
+        private void Close_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = false;
+            Close();
+        }
     }
 }

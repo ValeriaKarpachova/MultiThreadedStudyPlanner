@@ -14,7 +14,6 @@ namespace WpfApp2.Services
 
         public TrayService()
         {
-            // Завантажуємо іконку відносно папки з exe
             var iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
                                         "Images", "app_logo2.ico");
 
@@ -23,7 +22,7 @@ namespace WpfApp2.Services
                 Text = "Student Planner",
                 Icon = File.Exists(iconPath)
                            ? new Icon(iconPath)
-                           : SystemIcons.Application,   // fallback якщо файл не знайдено
+                           : SystemIcons.Application,   
                 Visible = true
             };
 
@@ -41,7 +40,6 @@ namespace WpfApp2.Services
         public void Notify(string title, string text,
             ToolTipIcon icon = ToolTipIcon.Info, int ms = 4000)
         {
-            // Використовуємо налаштовану іконку (app_logo2.ico) замість стандартної
             _icon.ShowBalloonTip(ms, title, text, icon);
         }
 

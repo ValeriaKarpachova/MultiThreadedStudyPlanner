@@ -19,14 +19,12 @@ namespace WpfApp2
             _taskManager = taskManager;
             _taskManager.IsEditing = true;
 
-            // Заповнюємо списки годин (00–23) і хвилин (00, 05, 10 ... 55)
             for (int h = 0; h <= 23; h++)
                 HourBox.Items.Add(h.ToString("D2"));
 
             for (int m = 0; m <= 55; m += 5)
                 MinuteBox.Items.Add(m.ToString("D2"));
 
-            // Заповнюємо поля з існуючого завдання
             NameBox.Text                = Task.Name;
             Description.Text            = Task.Description;
             EstimatedBox.Text           = Task.EstimatedHours.ToString();
@@ -43,7 +41,6 @@ namespace WpfApp2
             if (Task.SubjectId.HasValue)
                 SubjectBox.SelectedValue = Task.SubjectId.Value;
 
-            // Відновлюємо час здачі якщо він був задан
             if (Task.DeadlineTime.HasValue)
             {
                 TimeEnabledCheck.IsChecked = true;
@@ -57,7 +54,7 @@ namespace WpfApp2
             else
             {
                 TimeEnabledCheck.IsChecked = false;
-                HourBox.SelectedIndex   = 9;   // 09:00 за замовчуванням
+                HourBox.SelectedIndex   = 9;  
                 MinuteBox.SelectedIndex = 0;
             }
 
@@ -93,7 +90,6 @@ namespace WpfApp2
             Task.TaskType = sel == "Без типу" || string.IsNullOrWhiteSpace(sel)
                 ? null : sel;
 
-            // Час здачі
             if (TimeEnabledCheck.IsChecked == true &&
                 HourBox.SelectedItem != null && MinuteBox.SelectedItem != null)
             {

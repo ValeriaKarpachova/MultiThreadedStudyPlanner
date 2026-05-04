@@ -58,19 +58,6 @@ namespace WpfApp2.Views
             UpdateEntries(3);
         }
 
-        // Для перетягування вікна
-        private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        }
-
-        private void Close_Click(object sender, RoutedEventArgs e)
-        {
-            DialogResult = false;
-            Close();
-        }
-
         private void PartsSlider_ValueChanged(object sender,
             RoutedPropertyChangedEventArgs<double> e)
         {
@@ -126,5 +113,17 @@ namespace WpfApp2.Views
 
         private void Cancel_Click(object sender, RoutedEventArgs e) =>
             DialogResult = false;
+
+        private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed)
+                DragMove();
+        }
+
+        private void Close_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = false;
+            Close();
+        }
     }
 }

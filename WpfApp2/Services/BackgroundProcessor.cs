@@ -54,14 +54,9 @@ namespace WpfApp2.Services
             {
                 if (!task.Deadline.HasValue) continue;
                 if (task.IsCompleted) continue;
-
-                // Перевіряємо точний момент дедлайну (дата + час якщо є)
-                // Якщо час не вказано — вважаємо кінець дня (23:59:59),
-                // тобто задача "на сьогодні без часу" не переноситься до кінця дня
                 if (!task.DeadlineDateTime.HasValue) continue;
                 if (task.DeadlineDateTime.Value >= DateTime.Now) continue;
 
-                // Переносимо тільки ті що вже стали просроченими
                 if (task.ParentId.HasValue)
                 {
                     task.Deadline = tomorrow;
@@ -76,7 +71,6 @@ namespace WpfApp2.Services
                 }
             }
         }
-
         public void Stop() => _cts?.Cancel();
     }
 }

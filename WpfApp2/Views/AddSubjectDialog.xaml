@@ -65,7 +65,7 @@
             </StackPanel>
                 <Button Content="Створити" Click="Create_Click"
                     Style="{StaticResource PrimaryButton}"
-                     Padding="0,10" Height="44" FontSize="18" />
+                    Padding="0,10" Height="44" FontSize="18" />
             </StackPanel>
      </Border>
     </Border>

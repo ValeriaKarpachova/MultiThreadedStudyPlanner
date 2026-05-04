@@ -75,7 +75,6 @@
         </Style>
     </Window.Resources>
 
-    <!-- Без тіні - простий Border -->
     <Border Background="White" 
             CornerRadius="12" 
             BorderBrush="#E0DEFF" 
@@ -89,7 +88,6 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Шапка -->
             <Border Grid.Row="0" 
                     Background="#534AB7" 
                     CornerRadius="8,8,0,0" 
@@ -114,7 +112,6 @@
                 </Grid>
             </Border>
 
-            <!-- Текст -->
             <StackPanel Grid.Row="1" Margin="0,30,0,20">
                 <TextBlock x:Name="MessageText" 
                            Text="Ви впевнені, що хочете видалити цей елемент?"
@@ -125,7 +122,6 @@
                            HorizontalAlignment="Center"/>
             </StackPanel>
 
-            <!-- Кнопки -->
             <StackPanel Grid.Row="2" 
                         Orientation="Horizontal" 
                         HorizontalAlignment="Center"

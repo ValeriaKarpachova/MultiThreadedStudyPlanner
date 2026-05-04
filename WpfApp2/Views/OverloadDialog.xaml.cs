@@ -41,7 +41,6 @@ namespace WpfApp2.Views
                 SplitTaskCombo.SelectedIndex = 0;
         }
 
-        // Використовуємо TodayHours через PlannerService — враховує підзадачі
         private List<TaskItem> GetTasksToMove()
         {
             var today = DateTime.Today;
@@ -63,7 +62,6 @@ namespace WpfApp2.Views
             return toMove;
         }
 
-        // Для розбитих — тільки години сьогоднішніх підзадач
         private static double GetEffectiveTodayHours(TaskItem t)
         {
             if (!t.IsSplit)
@@ -101,7 +99,6 @@ namespace WpfApp2.Views
 
         private void Ignore_Click(object sender, RoutedEventArgs e) => Close();
 
-        // Для перетягування вікна
         private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)

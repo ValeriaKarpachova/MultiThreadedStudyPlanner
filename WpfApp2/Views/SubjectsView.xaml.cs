@@ -60,7 +60,6 @@ namespace WpfApp2.Views
                 ? $"Предмет «{item.Name}» містить {item.Tasks.Count} завдань.\n\nВи впевнені, що хочете видалити його разом з усіма завданнями?"
                 : $"Ви впевнені, що хочете видалити предмет «{item.Name}»?";
 
-            // Використовуємо ConfirmDialog замість MessageBox
             if (ConfirmDialog.Show(message, "Видалення предмету"))
             {
                 _svc.Delete(item.Id);
