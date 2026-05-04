@@ -4,9 +4,7 @@
     <DockPanel Margin="20">
 
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,16">
-            <TextBlock Text="Предмети" FontSize="24" FontWeight="Bold"
-                       VerticalAlignment="Center"/>
-            <Button Margin="16,0,0,0" Padding="12,6"
+            <Button Margin="0,0,0,0" Padding="12,6"
                     Style="{StaticResource PrimaryButton}"
                     Click="AddSubject_Click"  FontSize="18">
                 <StackPanel Orientation="Horizontal">

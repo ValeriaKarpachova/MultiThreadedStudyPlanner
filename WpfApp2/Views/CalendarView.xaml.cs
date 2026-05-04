@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using WpfApp2.Services;
 
 namespace WpfApp2.Views
@@ -14,6 +15,9 @@ namespace WpfApp2.Views
         private readonly TaskManager _manager;
         private DateTime _month;
 
+        private static readonly BitmapImage AddIcon =
+            new BitmapImage(new Uri("pack://application:,,,/Images/add.png"));
+
         public CalendarView(TaskManager manager)
         {
             InitializeComponent();
@@ -21,16 +25,12 @@ namespace WpfApp2.Views
             _month = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
 
             _manager.TasksChanged += OnTasksChanged;
-
             Unloaded += (_, __) => _manager.TasksChanged -= OnTasksChanged;
 
             Render();
         }
 
-        private void OnTasksChanged()
-        {
-            Dispatcher.InvokeAsync(Render);
-        }
+        private void OnTasksChanged() => Dispatcher.InvokeAsync(Render);
 
         private void Render()
         {
@@ -54,10 +54,10 @@ namespace WpfApp2.Views
                 {
                     if (t.IsSplit)
                     {
-                        var subs = t.SubTasks
-                            .Where(s => s.Deadline.HasValue && s.Deadline.Value.Date == date)
-                            .ToList();
-                        dayTasks.AddRange(subs);
+                        dayTasks.AddRange(
+                            t.SubTasks.Where(s =>
+                                s.Deadline.HasValue &&
+                                s.Deadline.Value.Date == date));
                     }
                     else if (t.Deadline.HasValue && t.Deadline.Value.Date == date)
                     {
@@ -107,7 +107,7 @@ namespace WpfApp2.Views
                             FontSize = 13,
                             Foreground = Brushes.White,
                             HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
-                            VerticalAlignment = System.Windows.VerticalAlignment.Center,
+                            VerticalAlignment = VerticalAlignment.Center,
                             TextAlignment = TextAlignment.Center
                         }
                     };
@@ -124,22 +124,58 @@ namespace WpfApp2.Views
                             : Brushes.Black
                     };
                 }
-
                 Grid.SetColumn(dayElement, 0);
 
                 var addBtn = new Button
                 {
-                    Content = "+",
-                    FontSize = 10,
-                    Width = 16,
-                    Height = 16,
+                    Width = 20,
+                    Height = 20,
                     HorizontalAlignment = System.Windows.HorizontalAlignment.Right,
-                    Background = Brushes.Transparent,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Background = new SolidColorBrush(Color.FromRgb(83, 74, 183)),
                     BorderThickness = new Thickness(0),
                     Padding = new Thickness(0),
                     Cursor = System.Windows.Input.Cursors.Hand,
-                    Tag = date
+                    Tag = date,
+                    ToolTip = "Додати завдання",
+                    Opacity = 1.0,
+                    Content = new System.Windows.Controls.Image
+                    {
+                        Source = AddIcon,
+                        Width = 14,
+                        Height = 14,
+                        HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center
+                    }
                 };
+
+                var addTemplate = new ControlTemplate(typeof(Button));
+                var addBorder = new FrameworkElementFactory(typeof(Border));
+                addBorder.Name = "AddBd";
+                addBorder.SetValue(Border.BackgroundProperty,
+                    new SolidColorBrush(Color.FromRgb(230, 225, 255)));
+                addBorder.SetValue(Border.CornerRadiusProperty, new CornerRadius(4));
+                var addCp = new FrameworkElementFactory(typeof(ContentPresenter));
+                addCp.SetValue(ContentPresenter.HorizontalAlignmentProperty, System.Windows.HorizontalAlignment.Center);
+                addCp.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+                addBorder.AppendChild(addCp);
+                addTemplate.VisualTree = addBorder;
+
+                var hoverTrigger = new Trigger
+                {
+                    Property = Button.IsMouseOverProperty,
+                    Value = true
+                };
+                hoverTrigger.Setters.Add(new Setter(
+                    Border.BackgroundProperty,
+                    new SolidColorBrush(Color.FromRgb(83, 74, 183)),
+                    "AddBd"));
+                addTemplate.Triggers.Add(hoverTrigger);
+
+                var addStyle = new Style(typeof(Button));
+                addStyle.Setters.Add(new Setter(Button.TemplateProperty, addTemplate));
+
+                addBtn.Style = addStyle;
                 addBtn.Click += AddTaskOnDate_Click;
                 Grid.SetColumn(addBtn, 1);
 
@@ -181,7 +217,7 @@ namespace WpfApp2.Views
                     expandBorder.AppendChild(expandCp);
                     expandTemplate.VisualTree = expandBorder;
 
-                    var expandStyle = new System.Windows.Style(typeof(Button));
+                    var expandStyle = new Style(typeof(Button));
                     expandStyle.Setters.Add(new Setter(Button.TemplateProperty, expandTemplate));
                     expandBtn.Style = expandStyle;
 
@@ -235,9 +271,7 @@ namespace WpfApp2.Views
             dlg.SetDeadline(date);
             dlg.Owner = Window.GetWindow(this);
             if (dlg.ShowDialog() == true)
-            {
                 _manager.AddTask(dlg.NewTask);
-            }
         }
 
         private void PrevMonth_Click(object s, RoutedEventArgs e)

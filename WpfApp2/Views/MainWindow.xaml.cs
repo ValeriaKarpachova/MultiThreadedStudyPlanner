@@ -57,7 +57,6 @@ namespace WpfApp2.Views
 
         private void Today_Click(object s, RoutedEventArgs e)
         {
-            // Перевіряємо перевантаження ТІЛЬКИ при переході на "Сьогодні"
             CheckTodayOverloadWarning();
             Navigate(new TasksView(manager, TaskViewMode.Today), BtnToday, "Сьогодні");
         }

@@ -5,10 +5,6 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="16">
-
-            <TextBlock Text="📊 Статистика продуктивності"
-                       FontSize="22" FontWeight="Bold" Margin="0,0,0,16"/>
-
             <!-- KPI рядок 1 -->
             <UniformGrid Rows="1" Columns="4" Margin="0,0,0,12">
                 <Border x:Name="CardTotal"        Style="{StaticResource KpiCard}"/>

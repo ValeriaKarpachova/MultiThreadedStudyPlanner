@@ -15,7 +15,7 @@ namespace WpfApp2.Services
 
             if (string.IsNullOrWhiteSpace(name))
             {
-                error = "Task name cannot be empty";
+                error = "Назва завдання не може бути порожньою";
                 return false;
             }
 
@@ -31,19 +31,19 @@ namespace WpfApp2.Services
                     System.Globalization.CultureInfo.InvariantCulture,
                     out estimatedHours))
             {
-                error = "Estimated hours must be a number (example: 2 or 1.5)";
+                error = "Орієнтовна кількість годин має бути числом (наприклад: 2 або 1,5)";
                 return false;
             }
 
             if (estimatedHours <= 0)
             {
-                error = "Estimated hours must be greater than 0";
+                error = "Орієнтовна кількість годин має бути більшою за 0";
                 return false;
             }
 
             if (estimatedHours > 200)
             {
-                error = "Estimated hours seems too large";
+                error = "Очікуваний час роботи завеликий";
                 return false;
             }
 
