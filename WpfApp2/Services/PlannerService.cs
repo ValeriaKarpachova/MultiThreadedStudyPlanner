@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using WpfApp2.Services;
 
 namespace WpfApp2.Services
 {
@@ -9,8 +8,7 @@ namespace WpfApp2.Services
     {
         public const double DailyLimit = 6.0;
 
-        // ── Задачі на сьогодні ─────────────────────────────────────────────────
-        // Для розбитих задач — враховуємо тільки підзадачі з дедлайном сьогодні
+        // ── Задачі на сьогодні ────────────────────────────────────────────────
         public static List<TaskItem> GetTodayTasks(List<TaskItem> tasks)
         {
             var today = DateTime.Today;
@@ -22,15 +20,12 @@ namespace WpfApp2.Services
 
                 if (t.IsSplit)
                 {
-                    // Тільки незавершені частини з дедлайном сьогодні
                     var todaySubs = t.SubTasks
                         .Where(s => s.Deadline.HasValue &&
                                     s.Deadline.Value.Date == today &&
                                     !s.IsChecked)
                         .ToList();
-
-                    if (todaySubs.Any())
-                        result.Add(t); // додаємо батька, але години рахуємо через TodayHours
+                    if (todaySubs.Any()) result.Add(t);
                 }
                 else
                 {
@@ -38,12 +33,10 @@ namespace WpfApp2.Services
                         result.Add(t);
                 }
             }
-
             return result;
         }
 
-        // ── Годин на сьогодні ──────────────────────────────────────────────────
-        // Для розбитих — сума годин ТІЛЬКИ тих підзадач, що мають дедлайн сьогодні
+        // ── Годин на сьогодні ─────────────────────────────────────────────────
         public static double GetTodayHours(List<TaskItem> tasks)
         {
             var today = DateTime.Today;
@@ -70,32 +63,52 @@ namespace WpfApp2.Services
             return total;
         }
 
-        // ── Пріоритети ─────────────────────────────────────────────────────────
+        // ── Розрахунок пріоритетів ────────────────────────────────────────────
+        /// <summary>
+        /// Пріоритет враховує точний момент дедлайну (дата + час):
+        /// чим менше годин залишилось — тим вищий пріоритет.
+        /// Прострочені задачі отримують найвищий пріоритет.
+        /// </summary>
         public static void CalculatePriorities(List<TaskItem> tasks)
         {
+            var now = DateTime.Now;
+
             foreach (var task in tasks)
             {
                 double urgency = 0;
-                if (task.Deadline.HasValue)
+
+                // Використовуємо DeadlineDateTime: якщо час не задано — кінець дня
+                if (task.DeadlineDateTime.HasValue)
                 {
-                    double daysLeft = (task.Deadline.Value - DateTime.Now).TotalDays;
-                    urgency = daysLeft <= 0
-                        ? 100.0 + Math.Abs(daysLeft) * 10
-                        : 100.0 / (daysLeft + 1.0);
+                    double hoursLeft = (task.DeadlineDateTime.Value - now).TotalHours;
+
+                    if (hoursLeft <= 0)
+                    {
+                        // Прострочено — базовий urgency 100 + бонус за кількість
+                        // прострочених годин (чим більше — тим критичніше)
+                        urgency = 100.0 + Math.Abs(hoursLeft) * 2;
+                    }
+                    else
+                    {
+                        // Ключова формула: urgency обернено пропорційна годинам
+                        // до дедлайну. Чим менше годин — тим вищий urgency.
+                        // Множник 24 нормалізує: 24 год → urgency≈50, 1 год → urgency≈96
+                        urgency = 100.0 / (1.0 + hoursLeft / 24.0);
+                    }
                 }
 
-                double importance = TaskTypeService.GetImportance(task.TaskType);
-                double completion = (100.0 - task.Progress) / 100.0;
+                double importance  = TaskTypeService.GetImportance(task.TaskType);
+                double completion  = (100.0 - task.Progress) / 100.0;
 
-                // importance тепер домінує через множник ×10 (діапазон 20–100)
                 task.Priority = (int)(
-                    urgency * 0.4
-                    + importance * 10.0    // ← ключова зміна: ×10 замість просто importance
-                    + completion * 20.0);
+                    urgency      * 0.5   // 50% — терміновість (з урахуванням часу)
+                    + importance * 5.0   // вага типу завдання
+                    + completion * 15.0  // незавершеність
+                );
             }
         }
 
-        // ── Розбиття задачі на частини ─────────────────────────────────────────
+        // ── Розбиття задачі на частини ────────────────────────────────────────
         public static List<TaskItem> SplitTask(TaskItem task, int parts, List<string> subTaskNames)
         {
             var today = DateTime.Today;
@@ -106,12 +119,13 @@ namespace WpfApp2.Services
             {
                 result.Add(new TaskItem
                 {
-                    Name = subTaskNames[i],
-                    Description = "",
-                    TaskType = task.TaskType,
-                    Priority = task.Priority,
-                    ParentId = task.Id,
-                    Deadline = today.AddDays(i),
+                    Name           = subTaskNames[i],
+                    Description    = "",
+                    TaskType       = task.TaskType,
+                    Priority       = task.Priority,
+                    ParentId       = task.Id,
+                    Deadline       = today.AddDays(i),
+                    // Підзадачі не мають свого часу (успадковують від дати)
                     EstimatedHours = i == parts - 1
                         ? Math.Round(task.EstimatedHours - hoursPerPart * (parts - 1), 1)
                         : hoursPerPart,
@@ -122,32 +136,27 @@ namespace WpfApp2.Services
             return result;
         }
 
-        // ── Зсув дедлайнів після розбиття підзадачі ───────────────────────────
-        // Коли частина з індексом splitIndex розбивається на subCount підчастин,
-        // всі наступні (незавершені) частини зсуваються вперед на (subCount - 1) днів.
+        // ── Зсув дедлайнів після розбиття підзадачі ──────────────────────────
         public static void ShiftSiblingDeadlines(
             TaskItem parent,
-            int      splitPartId,   // Id підзадачі яку розбиваємо
-            int      subCount)      // на скільки підчастин розбиваємо
+            int      splitPartId,
+            int      subCount)
         {
             if (subCount <= 1) return;
 
-            int shift = subCount - 1; // розбиваємо 1 частину → +N нових → зсуваємо на N-1
+            int shift = subCount - 1;
 
-            // Беремо підзадачі, відсортовані по дедлайну
             var ordered = parent.SubTasks
                 .OrderBy(s => s.Deadline ?? DateTime.MaxValue)
                 .ToList();
 
-            // Знаходимо індекс розбитої частини
             int splitIdx = ordered.FindIndex(s => s.Id == splitPartId);
             if (splitIdx < 0) return;
 
-            // Зсуваємо всі наступні незавершені частини
             for (int i = splitIdx + 1; i < ordered.Count; i++)
             {
                 var sibling = ordered[i];
-                if (sibling.IsChecked) continue; // завершені не чіпаємо
+                if (sibling.IsChecked) continue;
                 if (sibling.Deadline.HasValue)
                     sibling.Deadline = sibling.Deadline.Value.AddDays(shift);
             }

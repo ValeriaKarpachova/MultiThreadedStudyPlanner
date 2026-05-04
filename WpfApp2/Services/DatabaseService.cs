@@ -21,6 +21,7 @@ namespace WpfApp2.Services
                     Description    TEXT,
                     IsChecked      INTEGER DEFAULT 0,
                     Deadline       TEXT,
+                    DeadlineTime   TEXT,
                     TaskType       TEXT,
                     Priority       INTEGER,
                     EstimatedHours REAL,
@@ -29,21 +30,6 @@ namespace WpfApp2.Services
                 );";
             cmd.ExecuteNonQuery();
 
-            TryAddColumn(c, "IsChecked", "INTEGER DEFAULT 0");
-            TryAddColumn(c, "ParentId", "INTEGER");
-            TryAddColumn(c, "SubjectId", "INTEGER");
-        }
-
-        private static void TryAddColumn(
-            SqliteConnection c, string col, string type)
-        {
-            try
-            {
-                var cmd = c.CreateCommand();
-                cmd.CommandText = $"ALTER TABLE Tasks ADD COLUMN {col} {type}";
-                cmd.ExecuteNonQuery();
-            }
-            catch { }
         }
 
         public List<TaskItem> LoadTasks()
@@ -53,29 +39,49 @@ namespace WpfApp2.Services
             c.Open();
             var cmd = c.CreateCommand();
             cmd.CommandText = @"SELECT Id, Name, Description, IsChecked,
-                Deadline, TaskType, Priority, EstimatedHours,
+                Deadline, DeadlineTime, TaskType, Priority, EstimatedHours,
                 ParentId, SubjectId FROM Tasks";
             using var r = cmd.ExecuteReader();
             while (r.Read())
-                list.Add(new TaskItem
+            {
+                var item = new TaskItem
                 {
-                    Id = r.GetInt32(0),
-                    Name = r.GetString(1),
-                    Description = r.IsDBNull(2) ? "" : r.GetString(2),
-                    IsChecked = r.GetInt32(3) == 1,
-                    Deadline = r.IsDBNull(4) ? null
-                        : DateTime.ParseExact(
-                            r.GetString(4).Substring(0, Math.Min(10, r.GetString(4).Length)),
-                            "yyyy-MM-dd",
-                            System.Globalization.CultureInfo.InvariantCulture),
-                    TaskType = r.IsDBNull(5) ? "" : r.GetString(5),
-                    Priority = r.GetInt32(6),
-                    EstimatedHours = r.IsDBNull(7) ? 0.0 : r.GetDouble(7),
-                    ParentId = r.IsDBNull(8) ? null : r.GetInt32(8),
-                    SubjectId = r.IsDBNull(9) ? null : r.GetInt32(9)
-                });
+                    Id             = r.GetInt32(0),
+                    Name           = r.GetString(1),
+                    Description    = r.IsDBNull(2) ? "" : r.GetString(2),
+                    IsChecked      = r.GetInt32(3) == 1,
+                    TaskType       = r.IsDBNull(6) ? "" : r.GetString(6),
+                    Priority       = r.GetInt32(7),
+                    EstimatedHours = r.IsDBNull(8) ? 0.0 : r.GetDouble(8),
+                    ParentId       = r.IsDBNull(9)  ? null : r.GetInt32(9),
+                    SubjectId      = r.IsDBNull(10) ? null : r.GetInt32(10)
+                };
 
-            var roots = list.Where(t => t.ParentId == null).ToList();
+                if (!r.IsDBNull(4))
+                {
+                    var raw = r.GetString(4);
+                    if (DateTime.TryParseExact(
+                            raw.Substring(0, Math.Min(10, raw.Length)),
+                            "yyyy-MM-dd",
+                            System.Globalization.CultureInfo.InvariantCulture,
+                            System.Globalization.DateTimeStyles.None,
+                            out var d))
+                        item.Deadline = d;
+                }
+
+                if (!r.IsDBNull(5))
+                {
+                    var timeRaw = r.GetString(5);
+                    if (!string.IsNullOrWhiteSpace(timeRaw) &&
+                        TimeSpan.TryParseExact(timeRaw, @"hh\:mm",
+                            System.Globalization.CultureInfo.InvariantCulture, out var ts))
+                        item.DeadlineTime = ts;
+                }
+
+                list.Add(item);
+            }
+
+            var roots    = list.Where(t => t.ParentId == null).ToList();
             var children = list.Where(t => t.ParentId != null).ToList();
             foreach (var ch in children)
             {
@@ -89,16 +95,19 @@ namespace WpfApp2.Services
         {
             cmd.Parameters.AddWithValue("@Name", t.Name);
             cmd.Parameters.AddWithValue("@Desc", t.Description ?? "");
-            cmd.Parameters.AddWithValue("@Chk", t.IsChecked ? 1 : 0);
+            cmd.Parameters.AddWithValue("@Chk",  t.IsChecked ? 1 : 0);
             cmd.Parameters.AddWithValue("@Dead", t.Deadline.HasValue
                 ? t.Deadline.Value.Date.ToString("yyyy-MM-dd")
                 : (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@DeadTime", !string.IsNullOrEmpty(t.DeadlineTimeString)
+                ? t.DeadlineTimeString
+                : (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@Type", t.TaskType ?? "");
-            cmd.Parameters.AddWithValue("@Pri", t.Priority);
-            cmd.Parameters.AddWithValue("@Est", t.EstimatedHours);
-            cmd.Parameters.AddWithValue("@Par", t.ParentId.HasValue
+            cmd.Parameters.AddWithValue("@Pri",  t.Priority);
+            cmd.Parameters.AddWithValue("@Est",  t.EstimatedHours);
+            cmd.Parameters.AddWithValue("@Par",  t.ParentId.HasValue
                 ? t.ParentId.Value : (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@Sub", t.SubjectId.HasValue
+            cmd.Parameters.AddWithValue("@Sub",  t.SubjectId.HasValue
                 ? t.SubjectId.Value : (object)DBNull.Value);
         }
 
@@ -108,9 +117,9 @@ namespace WpfApp2.Services
             c.Open();
             var cmd = c.CreateCommand();
             cmd.CommandText = @"INSERT INTO Tasks
-                (Name,Description,IsChecked,Deadline,TaskType,
+                (Name,Description,IsChecked,Deadline,DeadlineTime,TaskType,
                  Priority,EstimatedHours,ParentId,SubjectId)
-                VALUES(@Name,@Desc,@Chk,@Dead,@Type,
+                VALUES(@Name,@Desc,@Chk,@Dead,@DeadTime,@Type,
                        @Pri,@Est,@Par,@Sub)";
             BindTask(cmd, task);
             cmd.ExecuteNonQuery();
@@ -125,8 +134,8 @@ namespace WpfApp2.Services
             var cmd = c.CreateCommand();
             cmd.CommandText = @"UPDATE Tasks SET
                 Name=@Name, Description=@Desc, IsChecked=@Chk,
-                Deadline=@Dead, TaskType=@Type, Priority=@Pri,
-                EstimatedHours=@Est, ParentId=@Par, SubjectId=@Sub
+                Deadline=@Dead, DeadlineTime=@DeadTime, TaskType=@Type,
+                Priority=@Pri, EstimatedHours=@Est, ParentId=@Par, SubjectId=@Sub
                 WHERE Id=@Id";
             BindTask(cmd, task);
             cmd.Parameters.AddWithValue("@Id", task.Id);

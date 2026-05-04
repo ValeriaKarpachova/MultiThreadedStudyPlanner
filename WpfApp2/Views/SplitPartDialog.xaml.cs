@@ -1,18 +1,49 @@
 using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows;
+using System.Windows.Input;
 using WpfApp2.Services;
 
 namespace WpfApp2.Views
 {
+    public class SubTaskEntrySplit : INotifyPropertyChanged
+    {
+        public int Index { get; set; }
+
+        private string _name = "";
+        public string Name
+        {
+            get => _name;
+            set { _name = value; Notify(nameof(Name)); }
+        }
+
+        private string _hours = "1";
+        public string Hours
+        {
+            get => _hours;
+            set { _hours = value; Notify(nameof(Hours)); }
+        }
+
+        public double ParsedHours =>
+            double.TryParse(_hours,
+                System.Globalization.NumberStyles.Any,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out var h) && h > 0 ? h : 1.0;
+
+        private void Notify(string n) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(n));
+        public event PropertyChangedEventHandler? PropertyChanged;
+    }
+
     public partial class SplitPartDialog : Window
     {
         private readonly TaskItem _sub;
         private readonly TaskItem _parent;
         private readonly TaskManager _manager;
         private bool _initialized;
-        public ObservableCollection<SubTaskEntry> Entries { get; } = new();
+        public ObservableCollection<SubTaskEntrySplit> Entries { get; } = new();
 
         public SplitPartDialog(TaskItem sub, TaskManager manager, TaskItem parent)
         {
@@ -22,12 +53,25 @@ namespace WpfApp2.Views
             _parent = parent;
 
             TitleText.Text = $"Розбити: {sub.Name}";
-            InfoText.Text  = $"{sub.EstimatedHours:F1} ч. • дедлайн: {sub.Deadline:dd.MM.yyyy}";
+            InfoText.Text = $"{sub.EstimatedHours:F1} ч. • дедлайн: {sub.Deadline:dd.MM.yyyy}";
 
-            SubList.ItemsSource = Entries;
+            SubTasksList.ItemsSource = Entries;  // ← SubTasksList (як в XAML)
             PartsLabel.Text = "2";
             _initialized = true;
             UpdateEntries(2);
+        }
+
+        // Для перетягування вікна
+        private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed)
+                DragMove();
+        }
+
+        private void Close_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = false;
+            Close();
         }
 
         private void PartsSlider_ValueChanged(object sender,
@@ -48,10 +92,10 @@ namespace WpfApp2.Views
                 double hours = i == parts - 1
                     ? Math.Round(_sub.EstimatedHours - h * (parts - 1), 1)
                     : h;
-                Entries.Add(new SubTaskEntry
+                Entries.Add(new SubTaskEntrySplit
                 {
                     Index = i + 1,
-                    Name  = $"{_sub.Name} ({i + 1}/{parts})",
+                    Name = $"{_sub.Name} ({i + 1}/{parts})",
                     Hours = hours.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)
                 });
             }
@@ -73,19 +117,18 @@ namespace WpfApp2.Views
                 var entry = Entries[i];
                 var newSub = new TaskItem
                 {
-                    Name          = entry.Name,
-                    TaskType      = _sub.TaskType,
-                    Priority      = _sub.Priority,
-                    ParentId      = _parent.Id,
-                    Deadline      = baseDate.AddDays(i),
+                    Name = entry.Name,
+                    TaskType = _sub.TaskType,
+                    Priority = _sub.Priority,
+                    ParentId = _parent.Id,
+                    Deadline = baseDate.AddDays(i),
                     EstimatedHours = entry.ParsedHours,
-                    IsChecked     = false
+                    IsChecked = false
                 };
                 _manager.AddSubTask(_parent, newSub);
             }
 
             // 3. Зсуваємо дедлайни наступних сиблінгів
-            //    (ті що йшли після розбитої частини)
             PlannerService.ShiftSiblingDeadlines(_parent, splitPartId, subCount);
 
             // 4. Зберігаємо оновлені дедлайни сиблінгів у БД

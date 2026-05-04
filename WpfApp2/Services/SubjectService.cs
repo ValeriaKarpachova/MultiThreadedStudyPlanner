@@ -14,6 +14,7 @@ namespace WpfApp2.Services
     public class SubjectService
     {
         private const string Conn = "Data Source=tasks.db";
+        private static bool _migrationDone = false;
 
         public SubjectService()
         {
@@ -25,10 +26,15 @@ namespace WpfApp2.Services
                     Id    INTEGER PRIMARY KEY AUTOINCREMENT,
                     Name  TEXT NOT NULL,
                     Color TEXT NOT NULL DEFAULT '#534AB7');
-                CREATE TABLE IF NOT EXISTS _SubjectMig(done INTEGER);
             ";
             cmd.ExecuteNonQuery();
-            TryAddColumn(c, "Tasks", "SubjectId", "INTEGER");
+
+            // Виконуємо міграцію тільки один раз
+            if (!_migrationDone)
+            {
+                TryAddColumn(c, "Tasks", "SubjectId", "INTEGER");
+                _migrationDone = true;
+            }
         }
 
         private static void TryAddColumn(SqliteConnection c,
@@ -36,11 +42,30 @@ namespace WpfApp2.Services
         {
             try
             {
-                var cmd = c.CreateCommand();
-                cmd.CommandText = $"ALTER TABLE {table} ADD COLUMN {col} {type}";
-                cmd.ExecuteNonQuery();
+                // Спочатку перевіряємо, чи існує колонка
+                var checkCmd = c.CreateCommand();
+                checkCmd.CommandText = $"PRAGMA table_info({table})";
+                using var reader = checkCmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    var columnName = reader.GetString(1);
+                    if (columnName == col)
+                    {
+                        // Колонка вже існує, виходимо
+                        return;
+                    }
+                }
+
+                // Якщо дійшли сюди - колонки немає, додаємо
+                var alterCmd = c.CreateCommand();
+                alterCmd.CommandText = $"ALTER TABLE {table} ADD COLUMN {col} {type}";
+                alterCmd.ExecuteNonQuery();
             }
-            catch { }
+            catch
+            {
+                // Ігноруємо помилки (наприклад, якщо таблиці не існує)
+            }
         }
 
         public List<Subject> GetAll()

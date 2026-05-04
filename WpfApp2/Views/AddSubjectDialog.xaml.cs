@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Windows;
+using System.Windows.Input;
 
 namespace WpfApp2.Views
 {
@@ -33,6 +34,18 @@ namespace WpfApp2.Views
 
             SubjectColor = rb?.Tag?.ToString() ?? "#534AB7";
             DialogResult = true;
+        }
+
+        private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed)
+                DragMove();
+        }
+
+        private void Close_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = false;
+            Close();
         }
     }
 }

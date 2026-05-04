@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using WpfApp2.Services;
 
 namespace WpfApp2.Views
@@ -99,5 +100,18 @@ namespace WpfApp2.Views
         }
 
         private void Ignore_Click(object sender, RoutedEventArgs e) => Close();
+
+        // Для перетягування вікна
+        private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed)
+                DragMove();
+        }
+
+        private void Close_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = false;
+            Close();
+        }
     }
 }

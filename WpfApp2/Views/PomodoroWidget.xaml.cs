@@ -25,7 +25,7 @@ namespace WpfApp2.Views
             TimerLabel.Text = $"{(int)r.TotalMinutes:D2}:{r.Seconds:D2}";
             TimerBar.Maximum = _totalSeconds;
             TimerBar.Value = _totalSeconds - (int)r.TotalSeconds;
-            CountLabel.Text = $"Помідорів: {Pomodoro.Completed}";
+            CountLabel.Text = $"Циклів: {Pomodoro.Completed}";
             PhaseLabel.Text = Pomodoro.Phase switch
             {
                 PomodoroPhase.Work => "Робота",
@@ -55,7 +55,6 @@ namespace WpfApp2.Views
                 _ => "Повернення до роботи"
             };
 
-            // Тільки системне сповіщення через Tray
             MainWindow.Tray?.Notify(title, msg);
 
             UpdateUI();

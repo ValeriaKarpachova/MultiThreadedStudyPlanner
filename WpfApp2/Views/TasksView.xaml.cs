@@ -87,8 +87,15 @@ namespace WpfApp2.Views
             var task = (sender as Button)?.DataContext as TaskItem;
             if (task == null) return;
 
-            manager.DeleteTask(task);
-            RefreshTree();
+            string message = task.IsSplit && task.SubTasks.Any()
+                ? $"Завдання «{task.Name}» містить {task.SubTasks.Count} підзадач.\n\nВи впевнені, що хочете видалити його разом з усіма підзадачами?"
+                : $"Ви впевнені, що хочете видалити завдання «{task.Name}»?";
+
+            if (ConfirmDialog.Show(message, "Видалення завдання"))
+            {
+                manager.DeleteTask(task);
+                RefreshTree();
+            }
         }
 
         private void Split_Click(object sender, RoutedEventArgs e)

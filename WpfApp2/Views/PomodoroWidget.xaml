@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <UserControl.Resources>
         <Style x:Key="PomBtn" TargetType="Button">
-            <Setter Property="Width"           Value="32"/>
+            <Setter Property="Width"           Value="30"/>
             <Setter Property="Height"          Value="28"/>
             <Setter Property="Margin"          Value="2"/>
             <Setter Property="Cursor"          Value="Hand"/>
@@ -12,18 +12,15 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="Bd"
-                                Background="{TemplateBinding Background}"
-                                CornerRadius="6">
-                            <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Opacity" Value="0.85"/>
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.82"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Bd" Property="Opacity" Value="0.7"/>
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.65"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -34,43 +31,61 @@
 
     <Border CornerRadius="8" Background="#F5F4FF" Padding="8,6">
         <StackPanel>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <TextBlock Text="🍅 " FontSize="12"/>
-                <TextBlock x:Name="PhaseLabel" FontSize="12"
-                           FontWeight="Bold" Foreground="#534AB7"/>
+
+            <!-- Заголовок: PNG-іконка + підпис -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,2">
+                <Image Source="/Images/pomodoro.png"
+                       Width="25" Height="25"
+                       Margin="0,0,5,0"
+                       VerticalAlignment="Center"
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                <TextBlock Text="Таймер фокусу"
+                                   FontSize="12" FontWeight="SemiBold"
+                                   Foreground="#534AB7"
+                                   VerticalAlignment="Center" Width="91"/>
             </StackPanel>
 
+            <!-- Фаза -->
+            <TextBlock x:Name="PhaseLabel" FontSize="11"
+                       HorizontalAlignment="Center"
+                       Foreground="#7B6FD0" Margin="0,0,0,2"/>
+
+            <!-- Час -->
             <TextBlock x:Name="TimerLabel" FontSize="22" FontWeight="Bold"
-                       HorizontalAlignment="Center" Margin="0,2"/>
+                       HorizontalAlignment="Center" Margin="0,1"/>
 
+            <!-- Прогрес-бар -->
             <ProgressBar x:Name="TimerBar" Height="4"
-                         Minimum="0" Margin="0,2,0,6"/>
+                         Minimum="0" Margin="0,2,0,5"
+                         Foreground="#534AB7" Background="#DDD9FF"
+                         BorderThickness="0"/>
 
+            <!-- Кнопки з PNG -->
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <!-- Старт -->
-                <Button x:Name="StartBtn" Style="{StaticResource PomBtn}"
-                        ToolTip="Старт" Click="Start_Click">
-                    <Image Source="/Images/play.png" Width="18" Height="18"/>
+                <Button Style="{StaticResource PomBtn}" ToolTip="Скинути" Click="Reset_Click">
+                    <Image Source="/Images/reset.png" Width="20" Height="20"
+                           RenderOptions.BitmapScalingMode="HighQuality"/>
                 </Button>
-                <!-- Пауза -->
-                <Button Style="{StaticResource PomBtn}"
-                        ToolTip="Пауза" Click="Pause_Click">
-                    <Image Source="/Images/pause.png" Width="18" Height="18"/>
+
+                <Button Style="{StaticResource PomBtn}" ToolTip="Старт" Click="Start_Click">
+                    <Image Source="/Images/play-button.png" Width="30" Height="30"
+                           RenderOptions.BitmapScalingMode="HighQuality"/>
                 </Button>
-                <!-- Скинути -->
-                <Button Style="{StaticResource PomBtn}"
-                        ToolTip="Скинути" Click="Reset_Click">
-                    <Image Source="/Images/reset.png" Width="18" Height="18"/>
+
+                <Button Style="{StaticResource PomBtn}" ToolTip="Пауза" Click="Pause_Click">
+                    <Image Source="/Images/pause-button.png" Width="30" Height="30"
+                           RenderOptions.BitmapScalingMode="HighQuality"/>
                 </Button>
-                <!-- Пропустити -->
-                <Button Style="{StaticResource PomBtn}"
-                        ToolTip="Пропустити фазу" Click="Skip_Click">
-                    <Image Source="/Images/skip.png" Width="18" Height="18"/>
+                
+                <Button Style="{StaticResource PomBtn}" ToolTip="Пропустити фазу" Click="Skip_Click">
+                    <Image Source="/Images/skip.png" Width="30" Height="30"
+                           RenderOptions.BitmapScalingMode="HighQuality"/>
                 </Button>
             </StackPanel>
 
+            <!-- Лічильник помідорів -->
             <TextBlock x:Name="CountLabel" FontSize="10" Foreground="Gray"
-                       HorizontalAlignment="Center"/>
+                       HorizontalAlignment="Center" Margin="0,3,0,0"/>
         </StackPanel>
     </Border>
 </UserControl>

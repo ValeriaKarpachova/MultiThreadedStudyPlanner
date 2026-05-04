@@ -11,7 +11,7 @@ namespace WpfApp2.Services
     public class ChangeLogEntry
     {
         public DateTime Timestamp { get; set; }
-        public string Action     { get; set; } = "";   // ADD / UPDATE / DELETE
+        public string Action     { get; set; } = "";
         public int     TaskId    { get; set; }
         public string  TaskName  { get; set; } = "";
         public string  Detail    { get; set; } = "";
@@ -20,10 +20,9 @@ namespace WpfApp2.Services
             $"{Timestamp:yyyy-MM-dd HH:mm:ss} | {Action,-6} | #{TaskId} \"{TaskName}\" | {Detail}";
     }
 
-    // ─── Власний бінарний формат (.spd – Student Planner Data) ──────────────────
+    // ─── Власний бінарний формат (.spd) ─────────────────────────────────────────
     public static class DataStorageService
     {
-        // ── Шляхи ──────────────────────────────────────────────────────────────
         private static readonly string DataDir =
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data");
 
@@ -31,19 +30,17 @@ namespace WpfApp2.Services
         private static readonly string CacheFile   = Path.Combine(DataDir, "tasks.cache");
         private static readonly string JournalFile = Path.Combine(DataDir, "changelog.log");
 
-        private static readonly byte[] Magic = { (byte)'S', (byte)'P', (byte)'D', 0x01 };
+        // Версія формату: 0x02 — додано поле DeadlineTime
+        private static readonly byte[] Magic = { (byte)'S', (byte)'P', (byte)'D', 0x02 };
 
-        // ── Кеш у пам'яті ──────────────────────────────────────────────────────
         private static List<TaskItem>? _cache;
         private static DateTime        _cacheTime = DateTime.MinValue;
         private static readonly TimeSpan CacheTTL = TimeSpan.FromMinutes(5);
         private static readonly ReaderWriterLockSlim _lock = new();
 
-        // ── Журнал змін ────────────────────────────────────────────────────────
         private static readonly List<ChangeLogEntry> _journal = new();
         public static IReadOnlyList<ChangeLogEntry> Journal => _journal.AsReadOnly();
 
-        // ВИПРАВЛЕННЯ: окремий об'єкт-лок для синхронного запису
         private static readonly object _journalFileLock = new object();
 
         // ═══════════════════════════════════════════════════════════════════════
@@ -56,7 +53,6 @@ namespace WpfApp2.Services
                 Directory.CreateDirectory(DataDir);
         }
 
-        // ── Збереження ─────────────────────────────────────────────────────────
         public static void Save(IEnumerable<TaskItem> tasks)
         {
             EnsureDirectory();
@@ -76,7 +72,6 @@ namespace WpfApp2.Services
                 $"Збережено {list.Count} задач у {DataFile}");
         }
 
-        // ── Завантаження ───────────────────────────────────────────────────────
         public static List<TaskItem> Load()
         {
             EnsureDirectory();
@@ -125,7 +120,6 @@ namespace WpfApp2.Services
             return result;
         }
 
-        // ── Інвалідація кешу ───────────────────────────────────────────────────
         public static void InvalidateCache()
         {
             _lock.EnterWriteLock();
@@ -133,10 +127,6 @@ namespace WpfApp2.Services
             finally { _lock.ExitWriteLock(); }
         }
 
-        // ── Журнал змін ────────────────────────────────────────────────────────
-        // ВИПРАВЛЕННЯ: синхронний запис у файл через lock замість async/semaphore
-        // (попередній код мав проблему: async Task всередині fire-and-forget міг
-        //  конкурувати із завершенням додатку і втрачати записи)
         public static void LogChange(string action, TaskItem task, string detail = "")
         {
             var entry = new ChangeLogEntry
@@ -150,8 +140,6 @@ namespace WpfApp2.Services
 
             lock (_journal) { _journal.Add(entry); }
 
-            // Синхронний запис у окремому ThreadPool-потоці
-            // (не блокує UI, але файл завжди дописується)
             System.Threading.ThreadPool.QueueUserWorkItem(_ =>
             {
                 try
@@ -178,7 +166,7 @@ namespace WpfApp2.Services
         public static List<ChangeLogEntry> LoadJournalFromFile()
         {
             if (!File.Exists(JournalFile)) return new();
-            var lines = File.ReadAllLines(JournalFile, Encoding.UTF8);
+            var lines  = File.ReadAllLines(JournalFile, Encoding.UTF8);
             var result = new List<ChangeLogEntry>();
             foreach (var line in lines)
             {
@@ -192,8 +180,7 @@ namespace WpfApp2.Services
                     TaskId    = parts.Length > 2 && int.TryParse(
                         parts[2].Trim().TrimStart('#').Split(' ')[0], out var id) ? id : 0,
                     TaskName  = parts.Length > 2
-                        ? parts[2].Trim().Replace($"#{result.Count}", "").Trim()
-                        : "",
+                        ? parts[2].Trim().Replace($"#{result.Count}", "").Trim() : "",
                     Detail    = parts.Length > 3 ? parts[3].Trim() : ""
                 });
             }
@@ -201,7 +188,8 @@ namespace WpfApp2.Services
         }
 
         // ═══════════════════════════════════════════════════════════════════════
-        //  PRIVATE – бінарний формат SPD
+        //  PRIVATE – бінарний формат SPD v2
+        //  Новий запис задачі: ... + DeadlineTimeTicks (long, -1 = не вказано)
         // ═══════════════════════════════════════════════════════════════════════
 
         private static void WriteSpd(List<TaskItem> tasks, string path)
@@ -224,6 +212,8 @@ namespace WpfApp2.Services
                 bw.Write(t.EstimatedHours);
                 bw.Write(t.IsChecked);
                 bw.Write(t.Deadline.HasValue ? t.Deadline.Value.Ticks : -1L);
+                // Нове поле v2: час дедлайну у тіках (-1 = не вказано)
+                bw.Write(t.DeadlineTime.HasValue ? t.DeadlineTime.Value.Ticks : -1L);
                 WriteString(bw, t.Name        ?? "");
                 WriteString(bw, t.Description ?? "");
                 WriteString(bw, t.TaskType    ?? "");
@@ -236,7 +226,13 @@ namespace WpfApp2.Services
             using var br = new BinaryReader(fs, Encoding.UTF8);
 
             var magic = br.ReadBytes(4);
-            if (!magic.SequenceEqual(Magic))
+
+            // Визначаємо версію формату за 4-м байтом magic
+            bool isV2 = magic[3] == 0x02;
+            // v1 (0x01) — без DeadlineTime, v2 (0x02) — з DeadlineTime
+            // Якщо magic не відповідає жодній відомій версії — кидаємо виняток
+            if (magic[0] != 'S' || magic[1] != 'P' || magic[2] != 'D' ||
+                (magic[3] != 0x01 && magic[3] != 0x02))
                 throw new InvalidDataException("Невірний формат файлу SPD");
 
             int count = br.ReadInt32();
@@ -255,11 +251,20 @@ namespace WpfApp2.Services
                 t.Priority       = br.ReadInt32();
                 t.EstimatedHours = br.ReadDouble();
                 t.IsChecked      = br.ReadBoolean();
-                long ticks       = br.ReadInt64();
-                t.Deadline       = ticks == -1 ? null : new DateTime(ticks);
-                t.Name           = ReadString(br);
-                t.Description    = ReadString(br);
-                t.TaskType       = ReadString(br);
+
+                long dateTicks   = br.ReadInt64();
+                t.Deadline       = dateTicks == -1 ? null : new DateTime(dateTicks);
+
+                // Читаємо час тільки якщо файл формату v2
+                if (isV2)
+                {
+                    long timeTicks = br.ReadInt64();
+                    t.DeadlineTime = timeTicks == -1 ? null : new TimeSpan(timeTicks);
+                }
+
+                t.Name        = ReadString(br);
+                t.Description = ReadString(br);
+                t.TaskType    = ReadString(br);
                 flat.Add(t);
             }
 
@@ -294,13 +299,10 @@ namespace WpfApp2.Services
             sb.AppendLine($"# count={tasks.Count}");
             foreach (var t in tasks)
                 sb.AppendLine($"{t.Id},{t.Name?.Replace(",", "\\,")}," +
-                              $"{t.Deadline:yyyy-MM-dd},{t.IsChecked}");
+                              $"{t.Deadline:yyyy-MM-dd},{t.DeadlineTimeString},{t.IsChecked}");
             File.WriteAllText(CacheFile, sb.ToString(), Encoding.UTF8);
         }
 
-        private static List<TaskItem>? ReadCacheManifest()
-        {
-            return null;
-        }
+        private static List<TaskItem>? ReadCacheManifest() => null;
     }
 }

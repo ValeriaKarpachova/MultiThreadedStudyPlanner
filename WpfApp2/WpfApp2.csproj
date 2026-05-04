@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -6,54 +6,72 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-	<UseWindowsForms>true</UseWindowsForms>
+    <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="Images\add.png" />
     <None Remove="Images\app_logo.png" />
+    <None Remove="Images\app_logo2.ico" />
+    <None Remove="Images\app_logo2.png" />
     <None Remove="Images\arrow.png" />
+    <None Remove="Images\bronze_medal.png" />
     <None Remove="Images\calendar.png" />
     <None Remove="Images\delete.png" />
     <None Remove="Images\done.png" />
     <None Remove="Images\edit.png" />
+    <None Remove="Images\gold_medal.png" />
     <None Remove="Images\home.png" />
     <None Remove="Images\notes.png" />
-    <None Remove="Images\pause.png" />
-    <None Remove="Images\play.png" />
+    <None Remove="Images\pause-button.png" />
+    <None Remove="Images\play-button.png" />
+    <None Remove="Images\pomodoro.png" />
     <None Remove="Images\reset.png" />
+    <None Remove="Images\silver_medal.png" />
     <None Remove="Images\skip.png" />
     <None Remove="Images\split.png" />
     <None Remove="Images\stats.png" />
     <None Remove="Images\subjects.png" />
     <None Remove="Images\today.png" />
+    <None Remove="Images\warning.png" />
+    <None Remove="Views\app_logo.png" />
+    <None Remove="Views\app_logo2.png" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.1" />
-    <PackageReference Include="MaterialDesignColors" Version="5.3.1" />
-    <PackageReference Include="MaterialDesignThemes" Version="5.3.1" />
+    <PackageReference Include="MaterialDesignColors" Version="5.3.2" />
+    <PackageReference Include="MaterialDesignThemes" Version="5.3.2" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.7" />
   </ItemGroup>
 
   <ItemGroup>
     <Resource Include="Images\add.png" />
     <Resource Include="Images\app_logo.png" />
+    <Content Include="Images\app_logo2.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Resource Include="Images\app_logo2.png" />
     <Resource Include="Images\arrow.png" />
+    <Resource Include="Images\bronze_medal.png" />
     <Resource Include="Images\calendar.png" />
     <Resource Include="Images\delete.png" />
     <Resource Include="Images\done.png" />
     <Resource Include="Images\edit.png" />
+    <Resource Include="Images\gold_medal.png" />
     <Resource Include="Images\home.png" />
     <Resource Include="Images\notes.png" />
-    <Resource Include="Images\pause.png" />
-    <Resource Include="Images\play.png" />
+    <Resource Include="Images\pause-button.png" />
+    <Resource Include="Images\play-button.png" />
+    <Resource Include="Images\pomodoro.png" />
     <Resource Include="Images\reset.png" />
+    <Resource Include="Images\silver_medal.png" />
     <Resource Include="Images\skip.png" />
     <Resource Include="Images\split.png" />
     <Resource Include="Images\stats.png" />
     <Resource Include="Images\subjects.png" />
     <Resource Include="Images\today.png" />
+    <Resource Include="Images\warning.png" />
   </ItemGroup>
 
 </Project>

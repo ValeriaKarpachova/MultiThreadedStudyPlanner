@@ -11,11 +11,13 @@
           SelectionUnit="FullRow"
           Margin="5"
           MinRowHeight="48"
-          FontSize="14"
+          
           HorizontalScrollBarVisibility="Disabled"
           RowDetailsVisibilityMode="Collapsed"
           ColumnHeaderHeight="40"
-          RowStyle="{StaticResource DataGridRowNoHighlight}">
+          GridLinesVisibility="None"
+          Background="Transparent"
+          BorderThickness="0">
 
         <DataGrid.ColumnHeaderStyle>
             <Style TargetType="DataGridColumnHeader">
@@ -30,6 +32,79 @@
             </Style>
         </DataGrid.ColumnHeaderStyle>
 
+        <DataGrid.CellStyle>
+            <Style TargetType="DataGridCell">
+                <Setter Property="BorderThickness"  Value="0"/>
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                <Setter Property="Background"       Value="Transparent"/>
+                <Setter Property="Foreground"       Value="#1E1E1E"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="DataGridCell">
+                            <Border Background="Transparent" BorderThickness="0">
+                                <ContentPresenter VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="Foreground" Value="#534AB7"/>
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </DataGrid.CellStyle>
+
+        <DataGrid.RowStyle>
+            <Style TargetType="DataGridRow">
+                <Setter Property="Background"
+                        Value="{Binding SubjectColor,
+                            Converter={StaticResource StringToBrushAlpha}}"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="DataGridRow">
+                            <Border x:Name="DGR_Border"
+                                    Background="{TemplateBinding Background}"
+                                    BorderThickness="0"
+                                    CornerRadius="6"
+                                    Margin="2,1"
+                                    SnapsToDevicePixels="True">
+                                <SelectiveScrollingGrid>
+                                    <SelectiveScrollingGrid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </SelectiveScrollingGrid.ColumnDefinitions>
+                                    <SelectiveScrollingGrid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </SelectiveScrollingGrid.RowDefinitions>
+                                    <DataGridCellsPresenter
+                                        Grid.Column="1"
+                                        ItemsPanel="{TemplateBinding ItemsPanel}"
+                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                    <DataGridDetailsPresenter
+                                        Grid.Column="1" Grid.Row="1"
+                                        SelectiveScrollingGrid.SelectiveScrollingOrientation="{Binding AreRowDetailsFrozen,
+                                            ConverterParameter={x:Static SelectiveScrollingOrientation.Vertical},
+                                            Converter={x:Static DataGrid.RowDetailsScrollingConverter},
+                                            RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"
+                                        Visibility="{TemplateBinding DetailsVisibility}"/>
+                                </SelectiveScrollingGrid>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter TargetName="DGR_Border" Property="BorderThickness" Value="2"/>
+                                    <Setter TargetName="DGR_Border" Property="BorderBrush"     Value="#534AB7"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </DataGrid.RowStyle>
+
         <DataGrid.Columns>
 
             <!-- Стрілка -->
@@ -38,11 +113,8 @@
                     <DataTemplate>
                         <ToggleButton x:Name="ExpanderToggle"
                                   Background="Transparent" BorderThickness="0"
-                                  Cursor="Hand"
-                                  HorizontalAlignment="Center"
-                                  VerticalAlignment="Center"
-                                  Visibility="{Binding IsSplit,
-                                      Converter={StaticResource BoolToVisibility}}"
+                                  Cursor="Hand" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                  Visibility="{Binding IsSplit, Converter={StaticResource BoolToVisibility}}"
                                   Checked="ExpanderToggle_Checked"
                                   Unchecked="ExpanderToggle_Unchecked"
                                   Tag="{Binding}">
@@ -52,8 +124,7 @@
                                         <Path x:Name="Arrow"
                                           Data="M 0 0 L 6 4 L 0 8 Z"
                                           Fill="#534AB7"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"
                                           RenderTransformOrigin="0.5,0.5">
                                             <Path.RenderTransform>
                                                 <RotateTransform Angle="0"/>
@@ -61,27 +132,22 @@
                                         </Path>
                                     </Grid>
                                     <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="Arrow" Property="Fill" Value="#3C3489"/>
-                                        </Trigger>
                                         <Trigger Property="IsChecked" Value="True">
                                             <Trigger.EnterActions>
                                                 <BeginStoryboard>
                                                     <Storyboard>
-                                                        <DoubleAnimation
-                                                        Storyboard.TargetName="Arrow"
-                                                        Storyboard.TargetProperty="(Path.RenderTransform).(RotateTransform.Angle)"
-                                                        To="90" Duration="0:0:0.15"/>
+                                                        <DoubleAnimation Storyboard.TargetName="Arrow"
+                                                            Storyboard.TargetProperty="(Path.RenderTransform).(RotateTransform.Angle)"
+                                                            To="90" Duration="0:0:0.15"/>
                                                     </Storyboard>
                                                 </BeginStoryboard>
                                             </Trigger.EnterActions>
                                             <Trigger.ExitActions>
                                                 <BeginStoryboard>
                                                     <Storyboard>
-                                                        <DoubleAnimation
-                                                        Storyboard.TargetName="Arrow"
-                                                        Storyboard.TargetProperty="(Path.RenderTransform).(RotateTransform.Angle)"
-                                                        To="0" Duration="0:0:0.15"/>
+                                                        <DoubleAnimation Storyboard.TargetName="Arrow"
+                                                            Storyboard.TargetProperty="(Path.RenderTransform).(RotateTransform.Angle)"
+                                                            To="0" Duration="0:0:0.15"/>
                                                     </Storyboard>
                                                 </BeginStoryboard>
                                             </Trigger.ExitActions>
@@ -99,10 +165,10 @@
                 <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding Name}"
-                               FontSize="14" FontWeight="SemiBold"
-                               VerticalAlignment="Center"
-                               TextTrimming="CharacterEllipsis"
-                               Margin="8,0"/>
+                                    FontWeight="SemiBold"
+                                   VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis"
+                                   Margin="8,0"/>
                     </DataTemplate>
                 </DataGridTemplateColumn.CellTemplate>
             </DataGridTemplateColumn>
@@ -112,70 +178,83 @@
                 <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding Description}"
-                               FontSize="13"
-                               TextTrimming="CharacterEllipsis"
-                               VerticalAlignment="Center"
-                               Foreground="Gray" Margin="4,0"/>
+                               FontSize="13" TextTrimming="CharacterEllipsis"
+                               VerticalAlignment="Center" Foreground="Gray" Margin="4,0"/>
                     </DataTemplate>
                 </DataGridTemplateColumn.CellTemplate>
             </DataGridTemplateColumn>
 
-            <!-- Години (без "ч.") -->
+            <!-- Години -->
             <DataGridTemplateColumn Header="Години" Width="0.8*">
                 <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding EstimatedHours, StringFormat={}{0:F1}}"
-                               FontSize="13"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               TextAlignment="Center"/>
+                               FontSize="13" HorizontalAlignment="Center"
+                               VerticalAlignment="Center" TextAlignment="Center"/>
                     </DataTemplate>
                 </DataGridTemplateColumn.CellTemplate>
             </DataGridTemplateColumn>
 
-            <!-- Дедлайн -->
-            <DataGridTemplateColumn Header="Дедлайн" Width="1*">
+            <!-- Дедлайн (дата + час) -->
+            <DataGridTemplateColumn Header="Дедлайн" Width="1.2*">
                 <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding Deadline, StringFormat={}{0:dd.MM.yyyy}}"
-                               FontSize="13"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               TextAlignment="Center"/>
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <!-- Дата -->
+                            <TextBlock Text="{Binding Deadline, StringFormat={}{0:dd.MM.yyyy}}"
+                                       FontSize="13" HorizontalAlignment="Center"
+                                       TextAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsOverdue}" Value="True">
+                                                <Setter Property="Foreground" Value="#DC2626"/>
+                                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <!-- Час (тільки якщо вказано) -->
+                            <TextBlock FontSize="11" HorizontalAlignment="Center"
+                                       TextAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text"       Value="{Binding DeadlineTimeDisplay}"/>
+                                        <Setter Property="Foreground" Value="#534AB7"/>
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding DeadlineTime}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsOverdue}" Value="True">
+                                                <Setter Property="Foreground" Value="#DC2626"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
                     </DataTemplate>
                 </DataGridTemplateColumn.CellTemplate>
             </DataGridTemplateColumn>
 
+            <!-- Прогрес -->
             <DataGridTemplateColumn Header="Прогрес" Width="1.5*">
                 <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate>
                         <Grid Margin="8,0" VerticalAlignment="Center">
-                            <!-- Для розбитих задач — прогрес-бар -->
-                            <StackPanel
-                    Visibility="{Binding IsSplit,
-                        Converter={StaticResource BoolToVisibility}}">
-                                <ProgressBar
-                        Value="{Binding Progress, Mode=OneWay}"
-                        Height="10"
-                        HorizontalAlignment="Stretch"
-                        Foreground="#534AB7"
-                        Background="#E0DEFF"
-                        BorderThickness="0"/>
-                                <TextBlock
-                        Text="{Binding Progress, StringFormat={}{0}%, Mode=OneWay}"
-                        FontSize="11" Foreground="Gray"
-                        HorizontalAlignment="Center"
-                        Margin="0,2,0,0"/>
+                            <StackPanel Visibility="{Binding IsSplit, Converter={StaticResource BoolToVisibility}}">
+                                <ProgressBar Value="{Binding Progress, Mode=OneWay}"
+                                        Height="10" HorizontalAlignment="Stretch"
+                                        Foreground="#534AB7" Background="#E0DEFF" BorderThickness="0"/>
+                                <TextBlock Text="{Binding Progress, StringFormat={}{0}%, Mode=OneWay}"
+                                        FontSize="11" Foreground="Gray"
+                                        HorizontalAlignment="Center" Margin="0,2,0,0"/>
                             </StackPanel>
-
-                            <!-- Для звичайних задач — чекбокс -->
-                            <CheckBox
-                    IsChecked="{Binding IsChecked,
-                        UpdateSourceTrigger=PropertyChanged}"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Visibility="{Binding IsSplit,
-                        Converter={StaticResource InverseBoolToVisibility}}"/>
+                            <CheckBox IsChecked="{Binding IsChecked, UpdateSourceTrigger=PropertyChanged}"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                                    Visibility="{Binding IsSplit, Converter={StaticResource InverseBoolToVisibility}}"/>
                         </Grid>
                     </DataTemplate>
                 </DataGridTemplateColumn.CellTemplate>
@@ -186,34 +265,27 @@
                 <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center">
+                                HorizontalAlignment="Center" VerticalAlignment="Center">
                             <Button Style="{StaticResource ImageButtonStyle}"
-                                Width="36" Height="36" Margin="2"
-                                Cursor="Hand" ToolTip="Редагувати"
-                                Click="Edit_Click" Tag="{Binding}">
+                                Width="36" Height="36" Margin="2" Cursor="Hand"
+                                ToolTip="Редагувати" Click="Edit_Click" Tag="{Binding}">
                                 <Image Source="/Images/edit.png" Width="22" Height="22"/>
                             </Button>
                             <Button Style="{StaticResource ImageButtonStyle}"
-                                Width="36" Height="36" Margin="2"
-                                Cursor="Hand" ToolTip="Видалити"
-                                Click="Delete_Click" Tag="{Binding}">
+                                Width="36" Height="36" Margin="2" Cursor="Hand"
+                                ToolTip="Видалити" Click="Delete_Click" Tag="{Binding}">
                                 <Image Source="/Images/delete.png" Width="22" Height="22"/>
                             </Button>
                             <Button Style="{StaticResource ImageButtonStyle}"
-                                Width="36" Height="36" Margin="2"
-                                Cursor="Hand" ToolTip="Розбити"
-                                Click="Split_Click" Tag="{Binding}"
-                                Visibility="{Binding IsSplit,
-                                    Converter={StaticResource InverseBoolToVisibility}}">
+                                Width="36" Height="36" Margin="2" Cursor="Hand"
+                                ToolTip="Розбити" Click="Split_Click" Tag="{Binding}"
+                                Visibility="{Binding IsSplit, Converter={StaticResource InverseBoolToVisibility}}">
                                 <Image Source="/Images/split.png" Width="22" Height="22"/>
                             </Button>
                             <Button Style="{StaticResource ImageButtonStyle}"
-                                Width="36" Height="36" Margin="2"
-                                Cursor="Hand" ToolTip="Редагувати частини"
-                                Click="EditParts_Click" Tag="{Binding}"
-                                Visibility="{Binding IsSplit,
-                                    Converter={StaticResource BoolToVisibility}}">
+                                Width="36" Height="36" Margin="2" Cursor="Hand"
+                                ToolTip="Редагувати частини" Click="EditParts_Click" Tag="{Binding}"
+                                Visibility="{Binding IsSplit, Converter={StaticResource BoolToVisibility}}">
                                 <Image Source="/Images/arrow.png" Width="22" Height="22"/>
                             </Button>
                         </StackPanel>
@@ -235,40 +307,53 @@
                                     <ColumnDefinition Width="2*"/>
                                     <ColumnDefinition Width="1.5*"/>
                                     <ColumnDefinition Width="0.8*"/>
-                                    <ColumnDefinition Width="1*"/>
+                                    <ColumnDefinition Width="1.2*"/>
                                     <ColumnDefinition Width="1.5*"/>
                                     <ColumnDefinition Width="1.4*"/>
                                 </Grid.ColumnDefinitions>
-
                                 <StackPanel Grid.Column="0" Orientation="Horizontal"
-                                        HorizontalAlignment="Right"
-                                        VerticalAlignment="Center">
+                                        HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border Width="10" BorderBrush="#CCCCCC"
-                                        BorderThickness="0,1,0,0"
-                                        VerticalAlignment="Center"/>
-                                    <CheckBox IsChecked="{Binding IsChecked,
-                                              UpdateSourceTrigger=PropertyChanged}"
+                                        BorderThickness="0,1,0,0" VerticalAlignment="Center"/>
+                                    <CheckBox IsChecked="{Binding IsChecked, UpdateSourceTrigger=PropertyChanged}"
                                           VerticalAlignment="Center" Margin="2,0,0,0"/>
                                 </StackPanel>
-
-                                <TextBlock Grid.Column="1"
-                                       Text="{Binding Name}"
+                                <TextBlock Grid.Column="1" Text="{Binding Name}"
                                        FontSize="13" VerticalAlignment="Center"
                                        Foreground="#444" Margin="8,0,4,0"
                                        TextTrimming="CharacterEllipsis"/>
-
-                                <!-- Години без "ч." -->
                                 <TextBlock Grid.Column="3"
                                        Text="{Binding EstimatedHours, StringFormat={}{0:F1}}"
                                        FontSize="13" VerticalAlignment="Center"
-                                       HorizontalAlignment="Center"
-                                       TextAlignment="Center" Foreground="Gray"/>
-
-                                <TextBlock Grid.Column="4"
-                                       Text="{Binding Deadline, StringFormat={}{0:dd.MM.yyyy}}"
-                                       FontSize="13" VerticalAlignment="Center"
-                                       HorizontalAlignment="Center"
-                                       TextAlignment="Center" Foreground="Gray"/>
+                                       HorizontalAlignment="Center" TextAlignment="Center" Foreground="Gray"/>
+                                <!-- Дедлайн підзадачі: дата + час -->
+                                <StackPanel Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding Deadline, StringFormat={}{0:dd.MM.yyyy}}"
+                                           FontSize="12" HorizontalAlignment="Center" Foreground="Gray">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsOverdue}" Value="True">
+                                                        <Setter Property="Foreground" Value="#DC2626"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <TextBlock FontSize="10" HorizontalAlignment="Center" Foreground="#534AB7">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text"       Value="{Binding DeadlineTimeDisplay}"/>
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding DeadlineTime}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
                             </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>

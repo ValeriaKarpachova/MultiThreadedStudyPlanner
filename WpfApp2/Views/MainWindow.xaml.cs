@@ -74,10 +74,6 @@ namespace WpfApp2.Views
         private void Statistics_Click(object s, RoutedEventArgs e) =>
             Navigate(new StatisticsView(manager), BtnStatistics, "Статистика");
 
-        /// <summary>
-        /// Показує попередження про перевантаження при переході на "Сьогодні".
-        /// Викликається ЛИШЕ при навігації, НЕ при редагуванні.
-        /// </summary>
         private void CheckTodayOverloadWarning()
         {
             var today = DateTime.Today;

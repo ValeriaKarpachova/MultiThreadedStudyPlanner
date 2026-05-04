@@ -13,6 +13,7 @@ namespace WpfApp2.Services
         public ObservableCollection<TaskItem> Tasks { get; } = new();
 
         private readonly DatabaseService _db;
+        private readonly SubjectService _subjectSvc = new();
 
         public bool IsEditing { get; set; }
 
@@ -37,6 +38,8 @@ namespace WpfApp2.Services
                 Tasks.Add(t);
             }
             Recalculate();
+            RefreshSubjectColors();
+
             AppLogger.Info("TaskManager", $"Завантажено {tasks.Count} задач");
         }
 
@@ -48,6 +51,7 @@ namespace WpfApp2.Services
             Application.Current.Dispatcher.Invoke(() =>
             {
                 Tasks.Add(task);
+                RefreshSubjectColors();
                 Subscribe(task);
                 Recalculate();
                 TasksChanged?.Invoke();
@@ -64,17 +68,11 @@ namespace WpfApp2.Services
             Application.Current.Dispatcher.Invoke(() =>
             {
                 Recalculate();
-                // НЕ викликаємо CheckOverload тут — тільки при навігації на "Сьогодні"
+                RefreshSubjectColors();
                 TasksChanged?.Invoke();
             });
         }
 
-        private static bool IsToday(DateTime? deadline)
-        {
-            if (!deadline.HasValue) return false;
-            var today = DateTime.Today;
-            return deadline.Value >= today && deadline.Value < today.AddDays(1);
-        }
 
         public void DeleteTask(TaskItem task)
         {
@@ -227,5 +225,20 @@ namespace WpfApp2.Services
                 });
             };
         }
+
+        public void RefreshSubjectColors()
+        {
+            var subjects = _subjectSvc.GetAll();
+            var map = subjects.ToDictionary(s => s.Id, s => s.Color);
+            foreach (var t in Tasks)
+            {
+                t.SubjectColor = (t.SubjectId.HasValue && map.TryGetValue(t.SubjectId.Value, out var c))
+                    ? c : "Transparent";
+                foreach (var sub in t.SubTasks)
+                    sub.SubjectColor = t.SubjectColor;
+            }
+        }
+
+
     }
 }

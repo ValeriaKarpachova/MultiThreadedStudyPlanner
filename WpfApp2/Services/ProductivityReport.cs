@@ -1,6 +1,5 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace WpfApp2.Services
 {
@@ -21,34 +20,27 @@ namespace WpfApp2.Services
         {
             var now = DateTime.Now;
 
-            var total = tasks.Count;
+            var total     = tasks.Count;
             var completed = tasks.Count(t => t.IsCompleted);
 
-            var overdue = tasks.Count(t =>
-                t.Deadline.HasValue &&
-                t.Deadline.Value < now &&
-                !t.IsCompleted);
+            // Прострочено = точний момент дедлайну (дата + час) вже минув
+            var overdue = tasks.Count(t => t.IsOverdue);
 
-            var avgProgress = total == 0 ? 0 : tasks.Average(t => t.Progress);
-
-            var totalHours = tasks.Sum(t => t.EstimatedHours);
-            var completedHours = tasks.Sum(t =>
-                t.EstimatedHours * (t.Progress / 100.0));
-
-            var productivity =
-                totalHours == 0 ? 0 : (completedHours / totalHours) * 100;
+            var avgProgress   = total == 0 ? 0 : tasks.Average(t => t.Progress);
+            var totalHours     = tasks.Sum(t => t.EstimatedHours);
+            var completedHours = tasks.Sum(t => t.EstimatedHours * (t.Progress / 100.0));
+            var productivity   = totalHours == 0 ? 0 : (completedHours / totalHours) * 100;
 
             return new ProductivityReport
             {
-                TotalTasks = total,
-                CompletedTasks = completed,
-                OverdueTasks = overdue,
-                AverageProgress = avgProgress,
-                TotalHours = totalHours,
-                CompletedHours = completedHours,
+                TotalTasks          = total,
+                CompletedTasks      = completed,
+                OverdueTasks        = overdue,
+                AverageProgress     = avgProgress,
+                TotalHours          = totalHours,
+                CompletedHours      = completedHours,
                 ProductivityPercent = productivity
             };
         }
     }
 }
-

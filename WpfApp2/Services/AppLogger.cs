@@ -10,11 +10,11 @@ namespace WpfApp2.Services
 
     public class LogEntry
     {
-        public DateTime  Timestamp { get; init; }
-        public LogLevel  Level     { get; init; }
-        public string    Category  { get; init; } = "";
-        public string    Message   { get; init; } = "";
-        public string?   Exception { get; init; }
+        public DateTime Timestamp { get; init; }
+        public LogLevel Level { get; init; }
+        public string Category { get; init; } = "";
+        public string Message { get; init; } = "";
+        public string? Exception { get; init; }
 
         public string Formatted =>
             $"[{Timestamp:yyyy-MM-dd HH:mm:ss.fff}] [{Level,-7}] [{Category,-16}] {Message}" +
@@ -23,9 +23,9 @@ namespace WpfApp2.Services
 
     public static class AppLogger
     {
-        public static LogLevel MinLevel        { get; set; } = LogLevel.Debug;
-        public static int      MaxFileSizeKb   { get; set; } = 512;   
-        public static int      MaxBufferItems  { get; set; } = 500;  
+        public static LogLevel MinLevel { get; set; } = LogLevel.Debug;
+        public static int MaxFileSizeKb { get; set; } = 512;
+        public static int MaxBufferItems { get; set; } = 500;
 
         private static readonly string LogDir =
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
@@ -34,7 +34,7 @@ namespace WpfApp2.Services
             Path.Combine(LogDir, $"app_{DateTime.Today:yyyyMMdd}.log");
 
         private static readonly List<LogEntry> _buffer = new();
-        public  static IReadOnlyList<LogEntry> Buffer  => _buffer.AsReadOnly();
+        public static IReadOnlyList<LogEntry> Buffer => _buffer.AsReadOnly();
 
         private static readonly SemaphoreSlim _fileLock = new(1, 1);
 
@@ -48,9 +48,9 @@ namespace WpfApp2.Services
             var entry = new LogEntry
             {
                 Timestamp = DateTime.Now,
-                Level     = level,
-                Category  = category,
-                Message   = message,
+                Level = level,
+                Category = category,
+                Message = message,
                 Exception = ex?.ToString()
             };
 
@@ -69,16 +69,16 @@ namespace WpfApp2.Services
                 System.Diagnostics.Debug.WriteLine(entry.Formatted);
         }
 
-        public static void Debug  (string cat, string msg)              => Log(LogLevel.Debug,   cat, msg);
-        public static void Info   (string cat, string msg)              => Log(LogLevel.Info,    cat, msg);
-        public static void Warning(string cat, string msg)              => Log(LogLevel.Warning, cat, msg);
-        public static void Error  (string cat, string msg, Exception? ex = null)
-                                                                         => Log(LogLevel.Error,   cat, msg, ex);
-        public static void Fatal  (string cat, string msg, Exception? ex = null)
-                                                                         => Log(LogLevel.Fatal,   cat, msg, ex);
+        public static void Debug(string cat, string msg) => Log(LogLevel.Debug, cat, msg);
+        public static void Info(string cat, string msg) => Log(LogLevel.Info, cat, msg);
+        public static void Warning(string cat, string msg) => Log(LogLevel.Warning, cat, msg);
+        public static void Error(string cat, string msg, Exception? ex = null)
+                                                                         => Log(LogLevel.Error, cat, msg, ex);
+        public static void Fatal(string cat, string msg, Exception? ex = null)
+                                                                         => Log(LogLevel.Fatal, cat, msg, ex);
 
         public static List<LogEntry> GetBuffered(LogLevel minLevel = LogLevel.Debug,
-                                                  string? category  = null)
+                                                  string? category = null)
         {
             lock (_buffer)
             {

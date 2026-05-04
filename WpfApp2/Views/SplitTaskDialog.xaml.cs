@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Input;
 using WpfApp2.Services;
 
 namespace WpfApp2.Views
@@ -17,7 +18,7 @@ namespace WpfApp2.Views
         }
 
         private string _hours = "1";
-        public string Hours  
+        public string Hours
         {
             get => _hours;
             set { _hours = value; Notify(nameof(Hours)); }
@@ -55,6 +56,19 @@ namespace WpfApp2.Views
 
             _initialized = true;
             UpdateEntries(3);
+        }
+
+        // Для перетягування вікна
+        private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed)
+                DragMove();
+        }
+
+        private void Close_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = false;
+            Close();
         }
 
         private void PartsSlider_ValueChanged(object sender,
@@ -99,7 +113,7 @@ namespace WpfApp2.Views
                 TaskType = _task.TaskType,
                 Priority = _task.Priority,
                 ParentId = _task.Id,
-                Deadline = today.AddDays(i),  
+                Deadline = today.AddDays(i),
                 EstimatedHours = en.ParsedHours,
                 IsChecked = false
             }).ToList();

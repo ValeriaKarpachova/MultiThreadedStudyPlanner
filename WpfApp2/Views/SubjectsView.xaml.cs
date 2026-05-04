@@ -56,12 +56,15 @@ namespace WpfApp2.Views
             var item = (s as Button)?.DataContext as SubjectWithTasks;
             if (item == null) return;
 
-            if (MessageBox.Show(
-                    $"Видалити предмет «{item.Name}»?",
-                    "Підтвердження",
-                    MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            string message = item.Tasks.Any()
+                ? $"Предмет «{item.Name}» містить {item.Tasks.Count} завдань.\n\nВи впевнені, що хочете видалити його разом з усіма завданнями?"
+                : $"Ви впевнені, що хочете видалити предмет «{item.Name}»?";
+
+            // Використовуємо ConfirmDialog замість MessageBox
+            if (ConfirmDialog.Show(message, "Видалення предмету"))
             {
                 _svc.Delete(item.Id);
+                _manager.RefreshSubjectColors();
                 Refresh();
             }
         }
