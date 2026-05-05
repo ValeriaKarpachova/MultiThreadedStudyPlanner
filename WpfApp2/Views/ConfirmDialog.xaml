@@ -99,7 +99,7 @@
                                 VerticalAlignment="Center"
                                 Margin="16,0,0,0">
                         <TextBlock Text="Підтвердження" 
-                                    
+                                   FontSize="18"
                                    FontWeight="SemiBold" 
                                    Foreground="White"/>
                     </StackPanel>
@@ -129,10 +129,10 @@
                 <Button Content="Так, видалити"
                         Style="{StaticResource ConfirmButton}"
                         Click="Confirm_Click"
-                        Margin="0,0,15,0"/>
+                        Margin="0,0,15,0" FontSize="18" Width="155"/>
                 <Button Content="Скасувати"
                         Style="{StaticResource CancelButton}"
-                        Click="Cancel_Click"/>
+                        Click="Cancel_Click" FontSize="18" Width="155"/>
             </StackPanel>
         </Grid>
     </Border>

@@ -64,6 +64,11 @@
 
                                 <StackPanel Grid.Column="1" Orientation="Vertical"
                                             VerticalAlignment="Top" HorizontalAlignment="Center">
+                                    <Button Content="✕" Foreground="#999"
+                                            Width="14" Height="14" Margin="0,5,0,0"
+                                            FontSize="8" Padding="0"
+                                            Background="Transparent" BorderThickness="0"
+                                            Cursor="Hand" Click="DeleteNote_Click"/>
                                     <Button Tag="#D9D8E8" Background="#D9D8E8"
                                             Width="14" Height="14" Margin="0,1"
                                             BorderThickness="1" BorderBrush="#D9D8E8"
@@ -84,11 +89,6 @@
                                             Width="14" Height="14" Margin="0,1"
                                             BorderThickness="1" BorderBrush="#F3E2CD"
                                             Padding="0" Click="Color_Click" Cursor="Hand"/>
-                                    <Button Content="✕" Foreground="#999"
-                                            Width="14" Height="14" Margin="0,5,0,0"
-                                            FontSize="8" Padding="0"
-                                            Background="Transparent" BorderThickness="0"
-                                            Cursor="Hand" Click="DeleteNote_Click"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
