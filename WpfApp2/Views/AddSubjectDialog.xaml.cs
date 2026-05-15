@@ -20,9 +20,9 @@ namespace WpfApp2.Views
 
         private void Create_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(NameBox.Text))
+            if (!Services.Validator.ValidateSubject(NameBox.Text, out string error))
             {
-                MessageBox.Show("Введіть назву предмету");
+                MessageBox.Show(error);
                 return;
             }
 

@@ -12,7 +12,7 @@ namespace WpfApp2.Views
     public class PartEditEntry : INotifyPropertyChanged
     {
         public int SubTaskId { get; set; }
-        public int Index     { get; set; }
+        public int Index { get; set; }
 
         private string _name = "";
         public string Name
@@ -50,14 +50,14 @@ namespace WpfApp2.Views
 
     public partial class EditPartsDialog : Window
     {
-        private readonly TaskItem    _task;
+        private readonly TaskItem _task;
         private readonly TaskManager _manager;
         public ObservableCollection<PartEditEntry> Entries { get; } = new();
 
         public EditPartsDialog(TaskItem task, TaskManager manager)
         {
             InitializeComponent();
-            _task    = task;
+            _task = task;
             _manager = manager;
 
             LoadEntries();
@@ -68,18 +68,18 @@ namespace WpfApp2.Views
         {
             Entries.Clear();
             TitleText.Text = _task.Name;
-            InfoText.Text  = $"Всього годин: {_task.EstimatedHours:F1} • Частин: {_task.SubTasks.Count}";
+            InfoText.Text = $"Всього годин: {_task.EstimatedHours:F1} • Частин: {_task.SubTasks.Count}";
 
             int idx = 1;
             foreach (var sub in _task.SubTasks.OrderBy(s => s.Deadline))
                 Entries.Add(new PartEditEntry
                 {
                     SubTaskId = sub.Id,
-                    Index     = idx++,
-                    Name      = sub.Name ?? "",
-                    Hours     = sub.EstimatedHours.ToString("F1",
+                    Index = idx++,
+                    Name = sub.Name ?? "",
+                    Hours = sub.EstimatedHours.ToString("F1",
                                     System.Globalization.CultureInfo.InvariantCulture),
-                    Deadline  = sub.Deadline
+                    Deadline = sub.Deadline
                 });
         }
 
@@ -91,10 +91,9 @@ namespace WpfApp2.Views
 
         private void DeletePart_Click(object sender, RoutedEventArgs e)
         {
-            if (Entries.Count <= 1)
+            if (!Validator.ValidatePartDeletion(Entries.Count, out string error))
             {
-                MessageBox.Show("Не можна видалити останню частину.\nВидаліть усе завдання цілком.",
-                                "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(error);
                 return;
             }
 
@@ -140,9 +139,9 @@ namespace WpfApp2.Views
                 var sub = _task.SubTasks.FirstOrDefault(s => s.Id == entry.SubTaskId);
                 if (sub == null) continue;
 
-                sub.Name           = entry.Name;
+                sub.Name = entry.Name;
                 sub.EstimatedHours = entry.ParsedHours;
-                sub.Deadline       = entry.Deadline;
+                sub.Deadline = entry.Deadline;
                 _manager.UpdateTask(sub);
             }
 

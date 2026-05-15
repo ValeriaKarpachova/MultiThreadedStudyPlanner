@@ -85,13 +85,13 @@ namespace WpfApp2.Views
 
         private void Split_Click(object sender, RoutedEventArgs e)
         {
-            var selected = SplitTaskCombo.SelectedItem as TaskItem;
-            if (selected == null)
+            if (!Validator.ValidateTaskSelected(SplitTaskCombo.SelectedItem, out string error))
             {
-                MessageBox.Show("Оберіть завдання для розбиття");
+                MessageBox.Show(error);
                 return;
             }
 
+            var selected = (TaskItem)SplitTaskCombo.SelectedItem;
             var dialog = new SplitTaskDialog(selected, _taskManager) { Owner = this };
             if (dialog.ShowDialog() == true)
                 DialogResult = true;

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using WpfApp2.Services;
 
@@ -71,7 +70,6 @@ namespace WpfApp2.Services
             });
         }
 
-
         public void DeleteTask(TaskItem task)
         {
             AppLogger.Warning("TaskManager", $"Видалення задачі \"{task.Name}\" (#{task.Id})");
@@ -83,7 +81,10 @@ namespace WpfApp2.Services
                 TasksChanged?.Invoke();
             });
 
-            Task.Run(() => _db.DeleteTask(task.Id));
+            Validator.SafeRunAsync(
+                () => _db.DeleteTask(task.Id),
+                "TaskManager", $"Помилка видалення задачі #{task.Id}");
+
             Recalculate();
         }
 
@@ -105,7 +106,10 @@ namespace WpfApp2.Services
         {
             AppLogger.Debug("TaskManager", $"Видалення підзадачі \"{sub.Name}\" (#{sub.Id})");
             DataStorageService.LogChange("DELETE", sub, "Видалено підзадачу");
-            Task.Run(() => _db.DeleteSubTask(sub.Id));
+
+            Validator.SafeRunAsync(
+                () => _db.DeleteSubTask(sub.Id),
+                "TaskManager", $"Помилка видалення підзадачі #{sub.Id}");
         }
 
         public void AddTaskSilent(TaskItem task)
@@ -144,25 +148,18 @@ namespace WpfApp2.Services
 
                 sub.PropertyChanged += (s, e) =>
                 {
-                    if (e.PropertyName == nameof(TaskItem.IsChecked))
-                    {
-                        parent.RefreshParent();
+                    if (e.PropertyName != nameof(TaskItem.IsChecked)) return;
 
-                        if (!IsEditing)
-                            Task.Run(() =>
-                            {
-                                try
-                                {
-                                    _db.UpdateTask(sub);
-                                    _db.UpdateTask(parent);
-                                    DataStorageService.LogChange("UPDATE", sub, "Зміна статусу підзадачі");
-                                }
-                                catch (Exception ex)
-                                {
-                                    AppLogger.Error("TaskManager", "Помилка оновлення підзадачі", ex);
-                                }
-                            });
-                    }
+                    parent.RefreshParent();
+
+                    if (IsEditing) return;
+
+                    Validator.SafeRunAsync(() =>
+                    {
+                        _db.UpdateTask(sub);
+                        _db.UpdateTask(parent);
+                        DataStorageService.LogChange("UPDATE", sub, "Зміна статусу підзадачі");
+                    }, "TaskManager", "Помилка оновлення підзадачі");
                 };
             });
         }
@@ -174,23 +171,17 @@ namespace WpfApp2.Services
                 var captured = sub;
                 captured.PropertyChanged += (s, e) =>
                 {
-                    if (e.PropertyName == nameof(TaskItem.IsChecked))
+                    if (e.PropertyName != nameof(TaskItem.IsChecked)) return;
+
+                    parent.RefreshParent();
+
+                    if (IsEditing) return;
+
+                    Validator.SafeRunAsync(() =>
                     {
-                        parent.RefreshParent();
-                        if (!IsEditing)
-                            Task.Run(() =>
-                            {
-                                try
-                                {
-                                    _db.UpdateTask(captured);
-                                    _db.UpdateTask(parent);
-                                }
-                                catch (Exception ex)
-                                {
-                                    AppLogger.Error("TaskManager", "Помилка синхронізації підзадачі", ex);
-                                }
-                            });
-                    }
+                        _db.UpdateTask(captured);
+                        _db.UpdateTask(parent);
+                    }, "TaskManager", "Помилка синхронізації підзадачі");
                 };
             }
         }
@@ -207,19 +198,11 @@ namespace WpfApp2.Services
                         TasksChanged?.Invoke());
                 }
 
-                Task.Run(() =>
+                Validator.SafeRunAsync(() =>
                 {
-                    try
-                    {
-                        _db.UpdateTask(task);
-                        DataStorageService.LogChange("UPDATE", task,
-                            $"Змінено поле: {e.PropertyName}");
-                    }
-                    catch (Exception ex)
-                    {
-                        AppLogger.Error("TaskManager", $"Помилка збереження задачі #{task.Id}", ex);
-                    }
-                });
+                    _db.UpdateTask(task);
+                    DataStorageService.LogChange("UPDATE", task, $"Змінено поле: {e.PropertyName}");
+                }, "TaskManager", $"Помилка збереження задачі #{task.Id}");
             };
         }
 
@@ -235,7 +218,5 @@ namespace WpfApp2.Services
                     sub.SubjectColor = t.SubjectColor;
             }
         }
-
-
     }
 }
