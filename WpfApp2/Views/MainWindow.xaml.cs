@@ -22,7 +22,6 @@ namespace WpfApp2.Views
             InitializeComponent();
 
             var db = new DatabaseService();
-            db.InitializeDatabase();
 
             manager = new TaskManager(db);
             manager.Load();

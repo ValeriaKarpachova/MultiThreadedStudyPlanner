@@ -27,8 +27,9 @@ namespace WpfApp2.Services
         private static readonly string DataFile    = Path.Combine(DataDir, "tasks.spd");
         private static readonly string CacheFile   = Path.Combine(DataDir, "tasks.cache");
         private static readonly string JournalFile = Path.Combine(DataDir, "changelog.log");
+        private static readonly string SubjectsFile = Path.Combine(DataDir, "subjects.spd");
 
-        private static readonly byte[] Magic = { (byte)'S', (byte)'P', (byte)'D', 0x02 };
+        private static readonly byte[] Magic = { (byte)'S', (byte)'P', (byte)'D', 0x03 };
 
         private static List<TaskItem>? _cache;
         private static DateTime        _cacheTime = DateTime.MinValue;
@@ -111,6 +112,38 @@ namespace WpfApp2.Services
 
             AppLogger.Log(LogLevel.Info, "DataStorage", $"Завантажено {result.Count} задач з файлу");
             return result;
+        }
+
+        public static void SaveSubjects(IEnumerable<Subject> subjects)
+        {
+            EnsureDirectory();
+            var list = subjects.ToList();
+            using var fs = new FileStream(SubjectsFile, FileMode.Create, FileAccess.Write);
+            using var bw = new BinaryWriter(fs, Encoding.UTF8);
+            bw.Write(list.Count);
+            foreach (var s in list)
+            {
+                bw.Write(s.Id);
+                WriteString(bw, s.Name);
+                WriteString(bw, s.Color);
+            }
+        }
+
+        public static List<Subject> LoadSubjects()
+        {
+            if (!File.Exists(SubjectsFile)) return new();
+            using var fs = new FileStream(SubjectsFile, FileMode.Open, FileAccess.Read);
+            using var br = new BinaryReader(fs, Encoding.UTF8);
+            int count = br.ReadInt32();
+            var list = new List<Subject>(count);
+            for (int i = 0; i < count; i++)
+                list.Add(new Subject
+                {
+                    Id = br.ReadInt32(),
+                    Name = ReadString(br),
+                    Color = ReadString(br)
+                });
+            return list;
         }
 
         public static void InvalidateCache()
@@ -204,6 +237,7 @@ namespace WpfApp2.Services
                 WriteString(bw, t.Name        ?? "");
                 WriteString(bw, t.Description ?? "");
                 WriteString(bw, t.TaskType    ?? "");
+                bw.Write(t.SubjectId ?? -1);
             }
         }
 
@@ -214,8 +248,9 @@ namespace WpfApp2.Services
 
             var magic = br.ReadBytes(4);
             bool isV2 = magic[3] == 0x02;
+            bool isV3 = magic[3] == 0x03;
             if (magic[0] != 'S' || magic[1] != 'P' || magic[2] != 'D' ||
-                (magic[3] != 0x01 && magic[3] != 0x02))
+                (magic[3] != 0x01 && magic[3] != 0x02 && magic[3] != 0x03))
                 throw new InvalidDataException("Невірний формат файлу SPD");
 
             int count = br.ReadInt32();
@@ -238,7 +273,7 @@ namespace WpfApp2.Services
                 long dateTicks   = br.ReadInt64();
                 t.Deadline       = dateTicks == -1 ? null : new DateTime(dateTicks);
 
-                if (isV2)
+                if (isV2 || isV3)
                 {
                     long timeTicks = br.ReadInt64();
                     t.DeadlineTime = timeTicks == -1 ? null : new TimeSpan(timeTicks);
@@ -247,6 +282,13 @@ namespace WpfApp2.Services
                 t.Name        = ReadString(br);
                 t.Description = ReadString(br);
                 t.TaskType    = ReadString(br);
+
+                if (isV3)
+                {
+                    int subjectRaw = br.ReadInt32();
+                    t.SubjectId = subjectRaw == -1 ? null : subjectRaw;
+                }
+
                 flat.Add(t);
             }
 

@@ -36,32 +36,30 @@ namespace WpfApp2.Services
             }
         }
 
-        private static void TryAddColumn(SqliteConnection c,
-            string table, string col, string type)
+        private static void TryAddColumn(SqliteConnection c, string table, string col, string type)
         {
             try
             {
-                // Спочатку перевіряємо, чи існує колонка
+                var tableCheck = c.CreateCommand();
+                tableCheck.CommandText =
+                    "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=@t";
+                tableCheck.Parameters.AddWithValue("@t", table);
+                var exists = (long)tableCheck.ExecuteScalar()! > 0;
+                if (!exists) return; 
+
                 var checkCmd = c.CreateCommand();
                 checkCmd.CommandText = $"PRAGMA table_info({table})";
                 using var reader = checkCmd.ExecuteReader();
-
                 while (reader.Read())
                 {
-                    var columnName = reader.GetString(1);
-                    if (columnName == col)
-                    {
-                        // Колонка вже існує, виходимо
-                        return;
-                    }
+                    if (reader.GetString(1) == col) return;
                 }
 
-                // Якщо дійшли сюди - колонки немає, додаємо
                 var alterCmd = c.CreateCommand();
                 alterCmd.CommandText = $"ALTER TABLE {table} ADD COLUMN {col} {type}";
                 alterCmd.ExecuteNonQuery();
             }
-            catch {  }
+            catch { }
         }
 
         public List<Subject> GetAll()
@@ -92,7 +90,9 @@ namespace WpfApp2.Services
             cmd.Parameters.AddWithValue("@col", color);
             cmd.ExecuteNonQuery();
             cmd.CommandText = "SELECT last_insert_rowid()";
+            DataStorageService.SaveSubjects(GetAll());
             return (int)(long)cmd.ExecuteScalar()!;
+
         }
 
         public void Delete(int id)
@@ -102,6 +102,21 @@ namespace WpfApp2.Services
             var cmd = c.CreateCommand();
             cmd.CommandText = "DELETE FROM Subjects WHERE Id=@id";
             cmd.Parameters.AddWithValue("@id", id);
+            cmd.ExecuteNonQuery();
+            DataStorageService.SaveSubjects(GetAll());
+        }
+
+        public void Restore(Subject s)
+        {
+            using var c = new SqliteConnection(Conn);
+            c.Open();
+            var cmd = c.CreateCommand();
+
+            cmd.CommandText = @"INSERT OR IGNORE INTO Subjects(Id, Name, Color) 
+                        VALUES(@id, @n, @col)";
+            cmd.Parameters.AddWithValue("@id", s.Id);
+            cmd.Parameters.AddWithValue("@n", s.Name);
+            cmd.Parameters.AddWithValue("@col", s.Color);
             cmd.ExecuteNonQuery();
         }
     }

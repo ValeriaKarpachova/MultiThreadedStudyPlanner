@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Threading.Tasks;
 using System.Linq;
 using System.Windows;
 using WpfApp2.Services;
@@ -12,7 +14,11 @@ namespace WpfApp2.Services
         public ObservableCollection<TaskItem> Tasks { get; } = new();
 
         private readonly DatabaseService _db;
-        private readonly SubjectService _subjectSvc = new();
+
+        private SubjectService? _subjectSvc;
+        private SubjectService SubjectSvc => _subjectSvc ??= new SubjectService();
+
+        private static readonly string DbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "tasks.db");
 
         public bool IsEditing { get; set; }
         public event Action? TasksChanged;
@@ -26,7 +32,51 @@ namespace WpfApp2.Services
         public void Load()
         {
             AppLogger.Info("TaskManager", "Завантаження задач...");
-            var tasks = _db.LoadTasks();
+
+            List<TaskItem> tasks;
+
+            if (File.Exists(DbPath))
+            {
+                _db.InitializeDatabase();
+                tasks = _db.LoadTasks();
+                var allForSpd = tasks.Concat(tasks.SelectMany(t => t.SubTasks)).ToList();
+                Task.Run(() => DataStorageService.Save(allForSpd));
+            }
+            else
+            {
+                AppLogger.Warning("TaskManager", "tasks.db не знайдено — спроба завантажити з SPD резервної копії");
+                tasks = DataStorageService.Load();
+
+                if (tasks.Count > 0)
+                {
+                    AppLogger.Info("TaskManager", $"Знайдено {tasks.Count} задач у SPD, відновлення БД...");
+
+                    _db.InitializeDatabase();
+
+                    var subjects = DataStorageService.LoadSubjects();
+                    foreach (var s in subjects)
+                        SubjectSvc.Restore(s);
+
+                    AppLogger.Info("TaskManager", $"Відновлено {subjects.Count} предметів з SPD");
+
+                    foreach (var t in tasks)
+                    {
+                        _db.AddTask(t);
+                        foreach (var sub in t.SubTasks)
+                        {
+                            sub.ParentId = t.Id;
+                            _db.AddTask(sub);
+                        }
+                    }
+                    AppLogger.Info("TaskManager", "БД успішно відновлено з SPD");
+                }
+                else
+                {
+                    AppLogger.Warning("TaskManager", "SPD також порожній або відсутній — починаємо з нуля");
+                    _db.InitializeDatabase();
+                }
+            }
+
             Tasks.Clear();
             foreach (var t in tasks)
             {
@@ -52,6 +102,7 @@ namespace WpfApp2.Services
                 Subscribe(task);
                 Recalculate();
                 TasksChanged?.Invoke();
+                SaveToSpd();
             });
 
             AppLogger.Info("TaskManager", $"Додано задачу \"{task.Name}\" (#{task.Id})");
@@ -67,6 +118,7 @@ namespace WpfApp2.Services
                 Recalculate();
                 RefreshSubjectColors();
                 TasksChanged?.Invoke();
+                SaveToSpd();
             });
         }
 
@@ -79,6 +131,7 @@ namespace WpfApp2.Services
             {
                 Tasks.Remove(task);
                 TasksChanged?.Invoke();
+                SaveToSpd(); 
             });
 
             Validator.SafeRunAsync(
@@ -145,6 +198,7 @@ namespace WpfApp2.Services
             {
                 parent.SubTasks.Add(sub);
                 Subscribe(sub);
+                SaveToSpd(); 
 
                 sub.PropertyChanged += (s, e) =>
                 {
@@ -160,6 +214,8 @@ namespace WpfApp2.Services
                         _db.UpdateTask(parent);
                         DataStorageService.LogChange("UPDATE", sub, "Зміна статусу підзадачі");
                     }, "TaskManager", "Помилка оновлення підзадачі");
+
+                    SaveToSpd();
                 };
             });
         }
@@ -182,6 +238,8 @@ namespace WpfApp2.Services
                         _db.UpdateTask(captured);
                         _db.UpdateTask(parent);
                     }, "TaskManager", "Помилка синхронізації підзадачі");
+
+                    SaveToSpd();
                 };
             }
         }
@@ -203,12 +261,14 @@ namespace WpfApp2.Services
                     _db.UpdateTask(task);
                     DataStorageService.LogChange("UPDATE", task, $"Змінено поле: {e.PropertyName}");
                 }, "TaskManager", $"Помилка збереження задачі #{task.Id}");
+
+                SaveToSpd();
             };
         }
 
         public void RefreshSubjectColors()
         {
-            var subjects = _subjectSvc.GetAll();
+            var subjects = SubjectSvc.GetAll();
             var map = subjects.ToDictionary(s => s.Id, s => s.Color);
             foreach (var t in Tasks)
             {
@@ -217,6 +277,16 @@ namespace WpfApp2.Services
                 foreach (var sub in t.SubTasks)
                     sub.SubjectColor = t.SubjectColor;
             }
+        }
+
+        private void SaveToSpd()
+        {
+            var all = Tasks.ToList();
+            var subjects = SubjectSvc.GetAll();
+            Task.Run(() => {
+                DataStorageService.Save(all);
+                DataStorageService.SaveSubjects(subjects);
+            });
         }
     }
 }
